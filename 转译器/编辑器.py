@@ -68,8 +68,18 @@ def 选区到临时文件(文本: str, 目录: Path) -> Path:
 # 侧栏不展示这些目录（缓存、临时产物、别人的东西）
 跳过目录 = frozenset({
     '__pycache__', '.git', '.回归', '.运行临时', '.自检临时', '.tmp',
-    '.venv', 'node_modules', '.idea', '.vscode', 'docs', '发布',
+    '.venv', 'venv', 'node_modules', '.idea', '.vscode', 'docs', '发布',
+    # 切到用户目录/上层时这些会把扫描拖死（不是项目代码）
+    'AppData', 'Windows', 'Program Files', 'Program Files (x86)',
+    'ProgramData', '$Recycle.Bin', 'System Volume Information',
+    '.cache', '.cargo', '.rustup', '.gradle', '.m2', '.npm', '.conda',
+    '.pytest_cache', 'dist', 'build', '.next', '.nuxt', 'target',
 })
+
+# 扫描上限：到点就停，宁可树少几行，也不要"点一下上级卡死"
+最多文件 = 800
+最长秒数 = 1.5
+最深层数 = 8
 
 
 def _配置路径() -> Path:
@@ -80,7 +90,9 @@ def _载入工作目录() -> Path | None:
     try:
         数据 = json.loads(_配置路径().read_text(encoding='utf-8'))
         目录 = Path(数据.get('根目录', ''))
-        return 目录 if 目录.is_dir() else None
+        if 目录.is_dir() and 目录.parent != 目录:
+            return 目录
+        return None
     except Exception:
         return None
 
@@ -91,20 +103,40 @@ def _缩写路径(路径: Path, 最长: int = 26) -> str:
 
 
 def 列出桥文件(根: Path, *, 后缀: tuple[str, ...] = ('.bridge',)) -> list[Path]:
-    """递归列出目录下所有 .bridge（以及 .py，方便对照），按路径排序
+    """递归列出目录下的 .bridge（剪枝 + 数量/深度/时间上限）
 
-    转译器就在根目录，所以"子目录里的 .bridge"才是主角：这个列表让编辑器
-    不用一个个点开文件夹找。
+    为什么要上限：点「↑ 上级」到用户目录甚至磁盘根时，rglob 会扫 AppData/Windows，
+    看起来就是"编辑器卡死/崩溃"。这里到点就停，只显示能显示的那部分。
     """
+    import time as _time
+
     根 = Path(根)
     结果: list[Path] = []
-    for 路径 in 根.rglob('*'):
-        if not 路径.is_file() or 路径.suffix not in 后缀:
-            continue
-        相对 = 路径.relative_to(根)
-        if any(部分 in 跳过目录 for 部分 in 相对.parts[:-1]):
-            continue
-        结果.append(路径)
+    开始 = _time.monotonic()
+    try:
+        for 当前, 目录们, 文件们 in os.walk(根):
+            当前路径 = Path(当前)
+            try:
+                相对深度 = len(当前路径.relative_to(根).parts)
+            except ValueError:
+                目录们[:] = []
+                continue
+            if 相对深度 >= 最深层数:
+                目录们[:] = []
+                continue
+            # 剪枝：缓存/系统目录 + 隐藏目录一律不扫
+            目录们[:] = [d for d in 目录们
+                        if d not in 跳过目录 and not d.startswith('.')]
+            if len(结果) >= 最多文件 or (_time.monotonic() - 开始) > 最长秒数:
+                break
+            for 名 in 文件们:
+                if Path(名).suffix not in 后缀:
+                    continue
+                结果.append(当前路径 / 名)
+                if len(结果) >= 最多文件:
+                    break
+    except OSError:
+        pass
     return sorted(结果, key=lambda p: str(p.relative_to(根)).lower())
 
 
@@ -459,9 +491,17 @@ class 桥编辑器:
         if not 新根.is_dir():
             self._置状态(f'不是目录：{新根}', 配色['错误'])
             return
+        if 新根.parent == 新根:
+            # 磁盘根（C:\ 之类）：扫下去就是整块盘，直接拒绝
+            self._置状态('这是磁盘根目录，请选一个具体项目目录', 配色['错误'])
+            return
         self.根目录 = 新根
         self._保存工作目录()
-        self.刷新文件树()
+        try:
+            self.刷新文件树()
+        except Exception as 错误:          # noqa: BLE001
+            self._置状态(f'读取目录失败：{错误}', 配色['错误'])
+            return
         self._置状态(f'工作目录：{新根}')
 
     def _保存工作目录(self) -> None:
@@ -481,7 +521,11 @@ class 桥编辑器:
         self.根标签.configure(text=_缩写路径(根))
         for 项 in 树.get_children(''):
             树.delete(项)
+        import time as _time
+
+        开始 = _time.monotonic()
         全部 = 列出桥文件(根)
+        超时 = (_time.monotonic() - 开始) >= 最长秒数 * 0.9 and len(全部) < 最多文件
         词 = self.树搜索.get().strip() if hasattr(self, '树搜索') else ''
         self.文件路径们 = 过滤文件(全部, 根, 词) if 词 else 全部
         已建目录: set[str] = set()
@@ -497,6 +541,14 @@ class 桥编辑器:
             名 = 相对.parts[-1]
             标记 = '  ' if 路径.suffix == '.bridge' else '  ·'
             树.insert(上级, 'end', iid=str(路径), text=f'{标记}{名}')
+        if not self.文件路径们:
+            if 超时:
+                self._置状态('目录太大，扫描超时了：换一个更具体的子目录试试', 配色['错误'])
+            else:
+                self._置状态(f'这个目录下没有 .bridge 文件：{根}', 配色['错误'])
+        elif len(self.文件路径们) >= 最多文件:
+            self._置状态(f'文件超过 {最多文件} 个，只显示前 {最多文件} 个（用搜索缩小范围）',
+                        配色['错误'])
         self._选中当前文件()
 
     def _选中当前文件(self) -> None:
