@@ -31,6 +31,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import queue
 import re
@@ -67,8 +68,26 @@ def 选区到临时文件(文本: str, 目录: Path) -> Path:
 # 侧栏不展示这些目录（缓存、临时产物、别人的东西）
 跳过目录 = frozenset({
     '__pycache__', '.git', '.回归', '.运行临时', '.自检临时', '.tmp',
-    '.venv', 'node_modules', '.idea', '.vscode', 'docs',
+    '.venv', 'node_modules', '.idea', '.vscode', 'docs', '发布',
 })
+
+
+def _配置路径() -> Path:
+    return Path.home() / '.桥语言编辑器.json'
+
+
+def _载入工作目录() -> Path | None:
+    try:
+        数据 = json.loads(_配置路径().read_text(encoding='utf-8'))
+        目录 = Path(数据.get('根目录', ''))
+        return 目录 if 目录.is_dir() else None
+    except Exception:
+        return None
+
+
+def _缩写路径(路径: Path, 最长: int = 26) -> str:
+    文本 = str(路径)
+    return 文本 if len(文本) <= 最长 else '…' + 文本[-(最长 - 1):]
 
 
 def 列出桥文件(根: Path, *, 后缀: tuple[str, ...] = ('.bridge',)) -> list[Path]:
@@ -203,6 +222,7 @@ class 桥编辑器:
         self.字号 = 12
         self.断点: set[int] = set()
         self.断点表: dict[str, set[int]] = {}   # 每个文件各自的断点
+        self.根目录: Path = _载入工作目录() or 项目根
         self._断点文件 = ''
         self.自动保存 = True                    # 停手 1.2 秒自动存
         self._自动保存任务 = None
@@ -276,6 +296,22 @@ class 桥编辑器:
             activeforeground='#ffffff', padx=6, pady=1, cursor='hand2',
             font=('Microsoft YaHei UI', 8),
         ).pack(side='right', padx=2)
+
+        目录栏 = tk.Frame(侧栏, bg=配色['背景'])
+        目录栏.pack(side='top', fill='x', padx=2, pady=(2, 0))
+        self.根标签 = tk.Label(
+            目录栏, text='', anchor='w', bg=配色['背景'], fg=配色['注释'],
+            font=('Microsoft YaHei UI', 8), padx=2,
+        )
+        self.根标签.pack(side='left', fill='x', expand=True)
+        for 文案, 命令 in (('目录…', self.选择目录), ('↑ 上级', self.上一级目录),
+                          ('桥', self.回到桥目录)):
+            tk.Button(
+                目录栏, text=文案, command=命令, bd=0, relief='flat',
+                bg='#2f3242', fg=配色['前景'], activebackground='#3d4157',
+                activeforeground='#ffffff', padx=4, cursor='hand2',
+                font=('Microsoft YaHei UI', 8),
+            ).pack(side='right', padx=(2, 0))
         搜索框 = tk.Frame(侧栏, bg=配色['背景'])
         搜索框.pack(side='top', fill='x', padx=2, pady=(2, 0))
         tk.Label(搜索框, text='搜', bg=配色['背景'], fg=配色['注释'],
@@ -405,12 +441,44 @@ class 桥编辑器:
         self.刷新文件树()
 
     # ---------------------------------------------------------------- 文件树
+    def 选择目录(self):
+        """选任意目录（包括 .. 上级）作为工作目录"""
+        选 = filedialog.askdirectory(initialdir=str(self.根目录),
+                                     title='选择要编辑的目录（可以选上级）')
+        if 选:
+            self._切换根(Path(选))
+
+    def 上一级目录(self):
+        self._切换根(self.根目录.parent)
+
+    def 回到桥目录(self):
+        self._切换根(项目根)
+
+    def _切换根(self, 新根: Path) -> None:
+        新根 = Path(新根).resolve()
+        if not 新根.is_dir():
+            self._置状态(f'不是目录：{新根}', 配色['错误'])
+            return
+        self.根目录 = 新根
+        self._保存工作目录()
+        self.刷新文件树()
+        self._置状态(f'工作目录：{新根}')
+
+    def _保存工作目录(self) -> None:
+        try:
+            _配置路径().write_text(
+                json.dumps({'根目录': str(self.根目录)}, ensure_ascii=False, indent=2),
+                encoding='utf-8')
+        except OSError:
+            pass
+
     def 刷新文件树(self) -> None:
         """重建左侧树：子目录里的 .bridge 全列出来（默认根是桥语言目录）"""
         树 = getattr(self, '文件树', None)
         if 树 is None:
             return
-        根 = 项目根
+        根 = self.根目录
+        self.根标签.configure(text=_缩写路径(根))
         for 项 in 树.get_children(''):
             树.delete(项)
         全部 = 列出桥文件(根)
@@ -700,10 +768,9 @@ class 桥编辑器:
             return
         self.停止()
         if 路径 is None:
-            初始 = 示例目录 if (示例目录 := 项目根 / '示例').is_dir() else 项目根
             选择 = filedialog.askopenfilename(
                 title='打开 .bridge 文件',
-                initialdir=str(初始),
+                initialdir=str(self.根目录),
                 filetypes=[('桥语言源码', '*.bridge'), ('Python 源码', '*.py'), ('全部文件', '*.*')],
             )
             if not 选择:
@@ -718,6 +785,12 @@ class 桥编辑器:
         self.编辑区.insert('1.0', 内容)
         self.编辑区.edit_modified(False)
         self.路径 = Path(路径)
+        try:
+            self.路径.resolve().relative_to(self.根目录.resolve())
+        except ValueError:
+            self.根目录 = self.路径.resolve().parent   # 打开 ../ 的文件：把根挪过去
+            self._保存工作目录()
+            self.刷新文件树()
         self.脏 = False
         旧文件 = str(getattr(self, '_断点文件', ''))
         if 旧文件 and 旧文件 != str(self.路径):
