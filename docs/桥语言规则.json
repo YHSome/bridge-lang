@@ -1,0 +1,806 @@
+{
+  "版本": "0.2.0",
+  "说明": "桥语言是 Python 的源级中文方言：.bridge 转译成标准 Python 再执行。",
+  "关键字": {
+    "匿名函数": "lambda",
+    "配对": "match",
+    "情形": "case",
+    "如果": "if",
+    "若": "if",
+    "假如": "if",
+    "倘若": "if",
+    "假若": "if",
+    "否则如果": "elif",
+    "否则若": "elif",
+    "不然如果": "elif",
+    "否则": "else",
+    "不然": "else",
+    "其余": "else",
+    "当": "while",
+    "只要": "while",
+    "对于": "for",
+    "遍历": "for",
+    "在": "in",
+    "并且": "and",
+    "且": "and",
+    "而且": "and",
+    "与": "and",
+    "或者": "or",
+    "或": "or",
+    "不是": "not",
+    "非": "not",
+    "不成立": "not",
+    "是": "is",
+    "等于": "==",
+    "相等": "==",
+    "不等于": "!=",
+    "不相等": "!=",
+    "大于": ">",
+    "小于": "<",
+    "不小于": ">=",
+    "大于等于": ">=",
+    "大于或等于": ">=",
+    "至多": "<=",
+    "小于等于": "<=",
+    "小于或等于": "<=",
+    "不大于": "<=",
+    "至少": ">=",
+    "整除": "//",
+    "取模": "%",
+    "乘方": "**",
+    "按位与": "&",
+    "按位或": "|",
+    "按位异或": "^",
+    "左移": "<<",
+    "右移": ">>",
+    "按位取反": "~",
+    "赋值为": ":=",
+    "加上": "+",
+    "减去": "-",
+    "乘以": "*",
+    "除以": "/",
+    "真": "True",
+    "真值": "True",
+    "对": "True",
+    "假": "False",
+    "假值": "False",
+    "错": "False",
+    "空": "None",
+    "空值": "None",
+    "虚无": "None",
+    "定义": "def",
+    "函数": "def",
+    "子程序": "def",
+    "类": "class",
+    "类别": "class",
+    "返回": "return",
+    "回传": "return",
+    "产出": "yield",
+    "交出": "yield",
+    "异步": "async",
+    "等待": "await",
+    "导入": "import",
+    "引入": "import",
+    "载入": "import",
+    "从": "from",
+    "来自": "from",
+    "作为": "as",
+    "当作": "as",
+    "尝试": "try",
+    "试着": "try",
+    "捕获": "except",
+    "捕获到": "except",
+    "最终": "finally",
+    "最后": "finally",
+    "抛出": "raise",
+    "引发": "raise",
+    "中断": "break",
+    "跳出": "break",
+    "停止循环": "break",
+    "继续": "continue",
+    "下一步": "continue",
+    "跳过": "continue",
+    "通过": "pass",
+    "占位": "pass",
+    "全局": "global",
+    "非局部": "nonlocal",
+    "删除": "del",
+    "删掉": "del",
+    "带": "with",
+    "连同": "with",
+    "断言": "assert",
+    "确保": "assert"
+  },
+  "内建": {
+    "输出": "print",
+    "打印": "print",
+    "显示": "print",
+    "输入": "input",
+    "读取输入": "input",
+    "整数": "int",
+    "转整数": "int",
+    "浮点": "float",
+    "转浮点": "float",
+    "字符串": "str",
+    "转字符串": "str",
+    "布尔": "bool",
+    "转布尔": "bool",
+    "复述": "repr",
+    "四舍五入": "round",
+    "类型": "type",
+    "是实例": "isinstance",
+    "打开": "open",
+    "运行": "桥运行",
+    "并行": "桥并行",
+    "读取": "桥读取",
+    "打开数据库": "桥打开数据库",
+    "取网页": "桥取网页",
+    "发请求": "桥发请求",
+    "新建文档": "桥新建",
+    "删除文件": "桥删除",
+    "等待完成": "桥等待",
+    "迭代": "iter",
+    "下一个": "next",
+    "列表": "list",
+    "字典": "dict",
+    "集合": "set",
+    "元组": "tuple",
+    "长度": "len",
+    "求长度": "len",
+    "取长度": "len",
+    "范围": "range",
+    "区间": "range",
+    "绝对值": "abs",
+    "求绝对值": "abs",
+    "求和": "sum",
+    "求总和": "sum",
+    "合计值": "sum",
+    "最大": "max",
+    "求最大值": "max",
+    "取最大": "max",
+    "最小": "min",
+    "求最小值": "min",
+    "取最小": "min",
+    "排序": "sorted",
+    "求排序": "sorted",
+    "排序结果": "sorted",
+    "枚举": "enumerate",
+    "逐个编号": "enumerate",
+    "映射": "map",
+    "过滤": "filter",
+    "任意": "any",
+    "任一为真": "any",
+    "全部": "all",
+    "全为真": "all",
+    "拉链": "zip",
+    "打包": "zip",
+    "商和余": "divmod",
+    "时间差": "datetime.timedelta",
+    "真值": "True",
+    "假值": "False",
+    "空值": "None",
+    "没有": "None"
+  },
+  "异常": {
+    "网络错误": "URLError",
+    "HTTP错误": "HTTPError",
+    "超时错误": "TimeoutError",
+    "JSON错误": "JSONDecodeError",
+    "数据库错误": "DatabaseError",
+    "完整性错误": "IntegrityError",
+    "操作错误": "OperationalError",
+    "权限错误": "PermissionError",
+    "解码错误": "UnicodeDecodeError",
+    "编码失败": "UnicodeEncodeError",
+    "内存错误": "MemoryError",
+    "递归错误": "RecursionError",
+    "键错误": "KeyError",
+    "索引错误": "IndexError",
+    "属性缺失": "AttributeError",
+    "类型不符": "TypeError",
+    "异常": "Exception",
+    "基础异常": "BaseException",
+    "名称错误": "NameError",
+    "名字错误": "NameError",
+    "值错误": "ValueError",
+    "类型错误": "TypeError",
+    "属性错误": "AttributeError",
+    "除零错误": "ZeroDivisionError",
+    "除零": "ZeroDivisionError",
+    "文件未找到错误": "FileNotFoundError",
+    "文件没找到": "FileNotFoundError",
+    "断言错误": "AssertionError",
+    "停止迭代": "StopIteration",
+    "导入错误": "ImportError",
+    "溢出错误": "OverflowError"
+  },
+  "方法": {
+    "追加": "append",
+    "添加": "append",
+    "加进去": "append",
+    "扩展": "extend",
+    "批量添加": "extend",
+    "插入": "insert",
+    "移除": "remove",
+    "去掉": "remove",
+    "弹出": "pop",
+    "取出": "pop",
+    "清空": "clear",
+    "拷贝": "copy",
+    "复制": "copy",
+    "排序": "sort",
+    "反转": "reverse",
+    "倒序": "reverse",
+    "计数": "count",
+    "索引": "index",
+    "内容": "items",
+    "条目": "items",
+    "键": "keys",
+    "键列表": "keys",
+    "值": "values",
+    "值列表": "values",
+    "获取": "get",
+    "取值": "get",
+    "更新": "update",
+    "合并更新": "update",
+    "设置默认": "setdefault",
+    "拆分": "split",
+    "分割": "split",
+    "替换": "replace",
+    "去除空白": "strip",
+    "去空格": "strip",
+    "大写": "upper",
+    "转大写": "upper",
+    "小写": "lower",
+    "转小写": "lower",
+    "开头是": "startswith",
+    "结尾是": "endswith",
+    "连接": "join",
+    "格式化": "format",
+    "找到": "find",
+    "读": "read",
+    "读取": "read",
+    "写": "write",
+    "写入": "write",
+    "关闭": "close",
+    "格式化日期": "strftime",
+    "星期几": "weekday",
+    "日期部分": "date",
+    "天数": "days",
+    "返回码": "returncode",
+    "标准输出": "stdout",
+    "标准错误": "stderr",
+    "编码": "encode",
+    "解码": "decode",
+    "十六进制": "hex",
+    "左对齐": "ljust",
+    "右对齐": "rjust",
+    "居中": "center",
+    "补零": "zfill",
+    "标题化": "title",
+    "首字母大写": "capitalize",
+    "去前缀": "removeprefix",
+    "去后缀": "removesuffix",
+    "是否数字": "isdigit",
+    "是否字母": "isalpha",
+    "是否空白": "isspace",
+    "是否数字字母": "isalnum",
+    "十六进制摘要": "hexdigest",
+    "摘要值": "digest",
+    "出现最多": "most_common",
+    "元素们": "elements",
+    "减去计数": "subtract",
+    "追加左": "appendleft",
+    "左弹出": "popleft",
+    "入队": "put",
+    "出队": "get",
+    "出队不等": "get_nowait",
+    "入队不等": "put_nowait",
+    "任务完成": "task_done",
+    "等待完成队列": "join",
+    "组": "group",
+    "分组": "group",
+    "组们": "groups",
+    "跨度": "span",
+    "开始位置": "start",
+    "结束位置": "end",
+    "查找": "search",
+    "匹配": "match",
+    "全部查找": "findall",
+    "刷新": "flush",
+    "缓冲": "buffer"
+  },
+  "模块": {
+    "哈希": {
+      "Python": "hashlib",
+      "成员": {
+        "新建摘要": "new",
+        "二五六": "sha256",
+        "五一二": "sha512",
+        "一二八": "sha1",
+        "常用摘要": "md5",
+        "文件摘要": "file_digest"
+      }
+    },
+    "子进程": {
+      "Python": "subprocess",
+      "成员": {
+        "运行": "run",
+        "调用": "call",
+        "获取输出": "check_output",
+        "检查调用": "check_call",
+        "管道": "PIPE",
+        "标准输出": "STDOUT",
+        "空设备": "DEVNULL",
+        "超时错误": "TimeoutExpired",
+        "完成进程": "CompletedProcess"
+      }
+    },
+    "数学": {
+      "Python": "math",
+      "成员": {
+        "圆周率": "pi",
+        "自然常数": "e",
+        "欧拉数": "e",
+        "全圆周率": "tau",
+        "无穷": "inf",
+        "非数": "nan",
+        "开方": "sqrt",
+        "平方根": "sqrt",
+        "立方根": "cbrt",
+        "幂": "pow",
+        "指数": "exp",
+        "指数减一": "expm1",
+        "连乘": "prod",
+        "勾股斜边": "hypot",
+        "对数": "log",
+        "以二为底对数": "log2",
+        "常用对数": "log10",
+        "对数加一": "log1p",
+        "向下取整": "floor",
+        "向上取整": "ceil",
+        "整数部分": "trunc",
+        "拆分小数": "modf",
+        "正弦": "sin",
+        "余弦": "cos",
+        "正切": "tan",
+        "反正弦": "asin",
+        "反余弦": "acos",
+        "反正切": "atan",
+        "两参反正切": "atan2",
+        "双曲正弦": "sinh",
+        "双曲余弦": "cosh",
+        "双曲正切": "tanh",
+        "反双曲正弦": "asinh",
+        "反双曲余弦": "acosh",
+        "反双曲正切": "atanh",
+        "角度转弧度": "radians",
+        "弧度转角度": "degrees",
+        "阶乘": "factorial",
+        "组合数": "comb",
+        "排列数": "perm",
+        "最大公约数": "gcd",
+        "最小公倍数": "lcm",
+        "整数平方根": "isqrt",
+        "精确求和": "fsum",
+        "判断有限": "isfinite",
+        "判断无穷": "isinf",
+        "判断非数": "isnan",
+        "近似相等": "isclose",
+        "绝对值": "fabs",
+        "复制符号": "copysign",
+        "拆分浮点": "frexp",
+        "拼回浮点": "ldexp",
+        "浮点余数": "fmod",
+        "取余": "remainder",
+        "距离": "dist"
+      }
+    },
+    "数据库": {
+      "Python": "sqlite3",
+      "成员": {
+        "连接": "connect",
+        "数据错误": "DatabaseError",
+        "完整性错误": "IntegrityError",
+        "操作错误": "OperationalError",
+        "行": "Row"
+      }
+    },
+    "日志": {
+      "Python": "logging",
+      "成员": {
+        "基础配置": "basicConfig",
+        "取记录器": "getLogger",
+        "记录调试": "debug",
+        "记录信息": "info",
+        "记录警告": "warning",
+        "记录错误": "error",
+        "记录严重": "critical",
+        "异常日志": "exception",
+        "调试级别": "DEBUG",
+        "信息级别": "INFO",
+        "警告级别": "WARNING",
+        "错误级别": "ERROR"
+      }
+    },
+    "日期": {
+      "Python": "datetime",
+      "成员": {
+        "现在": "datetime.now",
+        "今天": "datetime.today",
+        "世界时现在": "datetime.utcnow",
+        "从时间戳": "datetime.fromtimestamp",
+        "解析": "datetime.strptime",
+        "合并": "datetime.combine"
+      }
+    },
+    "时间": {
+      "Python": "time",
+      "成员": {
+        "当前时间戳": "time",
+        "单调时钟": "monotonic",
+        "计数": "perf_counter",
+        "处理器时间": "process_time",
+        "本地时间": "localtime",
+        "世界时": "gmtime",
+        "格式化时间": "strftime",
+        "解析时间": "strptime",
+        "转时间戳": "mktime",
+        "升序时间": "asctime",
+        "转字符串": "ctime",
+        "睡眠": "sleep",
+        "延时": "sleep"
+      }
+    },
+    "正则": {
+      "Python": "re",
+      "成员": {
+        "查找": "search",
+        "匹配": "match",
+        "全匹配": "fullmatch",
+        "全部查找": "findall",
+        "逐个查找": "finditer",
+        "替换": "sub",
+        "替换计数": "subn",
+        "拆分": "split",
+        "编译": "compile",
+        "转义": "escape",
+        "忽略大小写": "IGNORECASE",
+        "多行": "MULTILINE",
+        "点号通配": "DOTALL",
+        "详细模式": "VERBOSE",
+        "ASCII模式": "ASCII"
+      }
+    },
+    "线程": {
+      "Python": "threading",
+      "成员": {
+        "线程": "Thread",
+        "当前线程": "current_thread",
+        "事件": "Event",
+        "锁": "Lock",
+        "递归锁": "RLock",
+        "条件变量": "Condition",
+        "定时器": "Timer",
+        "守护线程": "daemon",
+        "活跃数": "active_count"
+      }
+    },
+    "统计": {
+      "Python": "statistics",
+      "成员": {
+        "平均": "mean",
+        "中位数": "median",
+        "低中位数": "median_low",
+        "高中位数": "median_high",
+        "众数": "mode",
+        "方差": "variance",
+        "总体方差": "pvariance",
+        "标准差": "stdev",
+        "总体标准差": "pstdev",
+        "调和平均": "harmonic_mean",
+        "几何平均": "geometric_mean",
+        "分位数": "quantiles"
+      }
+    },
+    "网络": {
+      "Python": "urllib.request",
+      "成员": {
+        "获取": "urlopen",
+        "请求": "Request"
+      }
+    },
+    "路径": {
+      "Python": "os.path",
+      "成员": {
+        "拼接": "join",
+        "存在": "exists",
+        "是文件": "isfile",
+        "是目录": "isdir",
+        "是链接": "islink",
+        "取目录": "dirname",
+        "取文件名": "basename",
+        "拆分": "split",
+        "拆扩展名": "splitext",
+        "绝对路径": "abspath",
+        "真实路径": "realpath",
+        "规范化": "normpath",
+        "共通前缀": "commonprefix",
+        "是绝对": "isabs",
+        "大小": "getsize",
+        "修改时间": "getmtime"
+      }
+    },
+    "系统": {
+      "Python": "os",
+      "成员": {
+        "环境": "environ",
+        "取环境": "getenv",
+        "当前目录": "getcwd",
+        "切换目录": "chdir",
+        "创建目录": "makedirs",
+        "建目录": "mkdir",
+        "列出目录": "listdir",
+        "扫描目录": "scandir",
+        "删除": "remove",
+        "删除目录": "rmdir",
+        "重命名": "rename",
+        "覆盖重命名": "replace",
+        "建临时文件": "mkstemp",
+        "系统名": "name",
+        "分隔符": "sep",
+        "换行符": "linesep",
+        "执行命令": "system",
+        "取进程号": "getpid"
+      }
+    },
+    "运行环境": {
+      "Python": "sys",
+      "成员": {
+        "参数": "argv",
+        "标准输入": "stdin",
+        "标准输出": "stdout",
+        "标准错误": "stderr",
+        "导入路径": "path",
+        "模块表": "modules",
+        "已加载": "modules",
+        "版本": "version",
+        "版本号": "version_info",
+        "平台": "platform",
+        "字节序": "byteorder",
+        "最大整数": "maxsize",
+        "可执行文件": "executable",
+        "实现名": "implementation",
+        "退出": "exit",
+        "递归上限": "getrecursionlimit",
+        "设置递归上限": "setrecursionlimit",
+        "默认编码": "getdefaultencoding",
+        "文件系统编码": "getfilesystemencoding",
+        "设置开关": "setswitchinterval",
+        "开关间隔": "getswitchinterval"
+      }
+    },
+    "迭代工具": {
+      "Python": "itertools",
+      "成员": {
+        "排列": "permutations",
+        "组合": "combinations",
+        "组合含重复": "combinations_with_replacement",
+        "笛卡尔积": "product",
+        "累计": "accumulate",
+        "分组": "groupby",
+        "切片": "islice",
+        "链": "chain",
+        "压平": "chain.from_iterable",
+        "无限计数": "count",
+        "无限循环": "cycle",
+        "无限重复": "repeat",
+        "压缩长": "zip_longest",
+        "成对": "pairwise"
+      }
+    },
+    "队列": {
+      "Python": "queue",
+      "成员": {
+        "队列": "Queue",
+        "后进先出队列": "LifoQueue",
+        "优先队列": "PriorityQueue",
+        "简单队列": "SimpleQueue",
+        "队空": "Empty",
+        "队满": "Full"
+      }
+    },
+    "随机": {
+      "Python": "random",
+      "成员": {
+        "种子": "seed",
+        "随机浮点": "random",
+        "均匀随机": "uniform",
+        "随机整数": "randint",
+        "选择": "choice",
+        "多选": "choices",
+        "样本": "sample",
+        "洗牌": "shuffle",
+        "高斯": "gauss",
+        "打乱顺序": "shuffle"
+      }
+    },
+    "集合工具": {
+      "Python": "collections",
+      "成员": {
+        "计数器": "Counter",
+        "默认字典": "defaultdict",
+        "双端队列": "deque",
+        "有序字典": "OrderedDict",
+        "命名元组": "namedtuple",
+        "链映射": "ChainMap"
+      }
+    }
+  },
+  "语法糖": [
+    {
+      "写法": "重复执行直到 «条件» :",
+      "生成": "while not ({条件}):"
+    },
+    {
+      "写法": "重复执行 «次数» 次：",
+      "生成": "for _ in range({次数}):"
+    },
+    {
+      "写法": "重复 «次数» 次：",
+      "生成": "for _ in range({次数}):"
+    },
+    {
+      "写法": "永久循环 / 死循环：",
+      "生成": "while True:"
+    },
+    {
+      "写法": "只要 «条件» 就重复：",
+      "生成": "while {条件}:"
+    },
+    {
+      "写法": "对于 每个 «变量» 在 «序列»：",
+      "生成": "for {变量} in {序列}:"
+    },
+    {
+      "写法": "遍历 «序列» 中的 每个 «变量»：",
+      "生成": "for {变量} in {序列}:"
+    },
+    {
+      "写法": "对 «序列» 中的每一项：",
+      "生成": "for _ in {序列}:"
+    },
+    {
+      "写法": "如果 «条件» 那么 / 则：",
+      "生成": "if {条件}:"
+    },
+    {
+      "写法": "否则如果 «条件» 那么 / 则：",
+      "生成": "elif {条件}:"
+    },
+    {
+      "写法": "否则 的话：",
+      "生成": "else:"
+    },
+    {
+      "写法": "定义函数 «名» «参数»）])：",
+      "生成": "def {名}{参数}:"
+    },
+    {
+      "写法": "尝试执行：",
+      "生成": "try:"
+    },
+    {
+      "写法": "无论如何：",
+      "生成": "finally:"
+    },
+    {
+      "写法": "捕获异常时：",
+      "生成": "except:"
+    },
+    {
+      "写法": "捕获 «类型» 时：",
+      "生成": "except {类型}:"
+    },
+    {
+      "写法": "跳出循环：",
+      "生成": "break"
+    },
+    {
+      "写法": "继续下一次循环：",
+      "生成": "continue"
+    },
+    {
+      "写法": "结束本次循环 / 进入下一次循环：",
+      "生成": "continue"
+    },
+    {
+      "写法": "直到 «条件» 为止 :",
+      "生成": "while not ({条件}):"
+    },
+    {
+      "写法": "一直重复 / 一直循环 :",
+      "生成": "while True:"
+    },
+    {
+      "写法": "等待 «条件» 直到 :",
+      "生成": "while not ({条件}): pass"
+    },
+    {
+      "写法": "当 «条件» 就 «语句»：",
+      "生成": "while {条件}: {语句}"
+    },
+    {
+      "写法": "如果 «条件» 就 «语句»：",
+      "生成": "if {条件}: {语句}"
+    },
+    {
+      "写法": "否则 «语句»：",
+      "生成": "else: {语句}"
+    },
+    {
+      "写法": "把 «目标» 设为 / 设定为 / 赋值成 «值»：",
+      "生成": "{目标} = {值}"
+    },
+    {
+      "写法": "设 «目标» 为 «值»：",
+      "生成": "{目标} = {值}"
+    },
+    {
+      "写法": "将 «目标» 设为 / 设定为 «值»：",
+      "生成": "{目标} = {值}"
+    },
+    {
+      "写法": "将 «目标» 增加 «值»：",
+      "生成": "{目标} += {值}"
+    },
+    {
+      "写法": "将 «目标» 减少 «值»：",
+      "生成": "{目标} -= {值}"
+    },
+    {
+      "写法": "将 «目标» 乘以 «值»：",
+      "生成": "{目标} *= {值}"
+    },
+    {
+      "写法": "将 «目标» 除以 «值»：",
+      "生成": "{目标} /= {值}"
+    },
+    {
+      "写法": "将 «目标» 取模 «值»：",
+      "生成": "{目标} %= {值}"
+    },
+    {
+      "写法": "将 «目标» 乘方 «值»：",
+      "生成": "{目标} **= {值}"
+    },
+    {
+      "写法": "将 «目标» 整除商 «值»：",
+      "生成": "{目标} //= {值}"
+    },
+    {
+      "写法": "给 «目标» 加上 «值»：",
+      "生成": "{目标} += {值}"
+    },
+    {
+      "写法": "给 «目标» 减去 «值»：",
+      "生成": "{目标} -= {值}"
+    },
+    {
+      "写法": "输出 / 打印 «参数»：",
+      "生成": "print({参数})"
+    }
+  ],
+  "独有语法": {
+    "标记": "声明跳转目标，只能写在模块顶层或函数/类的第一层",
+    "跳转到": "跳到某个标记（也可写 跳转/goto）",
+    "运行": "运行另一个 .bridge，等它结束并拿返回",
+    "并行": "开线程跑另一个 .bridge，不等",
+    "等待完成": "等待并行任务结束",
+    "读取": ".json 返回 JSON 对象、.csv 返回表格，其它返回文档",
+    "新建文档": "新建文件；.json 收 dict/list，.csv 收二维表",
+    "文件": "基类：文件名/路径/大小/存在/后缀/改名/复制到/删除自己",
+    "文档": "文件子类：内容/追加/下标/字符串化",
+    "表格": "CSV 二维表：表头/行数/行/列/追加行/保存"
+  }
+}

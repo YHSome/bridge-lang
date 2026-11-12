@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>桥语言 · 用中文写 Python</title>
+<meta name="description" content="桥语言是 Python 的源级中文方言：中文关键字、独有语法、断点调试、便携包，还自带给 AI 的说明书。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="#top">桥语言</a>
+  <nav>
+    <a href="#features">特性</a>
+    <a href="#quick">快速开始</a>
+    <a href="#ai">给 AI</a>
+    <a href="#numbers">数据</a>
+    <a href="https://github.com/" id="repo">GitHub</a>
+  </nav>
+</header>
+
+<main id="top">
+
+<section class="hero">
+  <div class="hero-text">
+    <p class="badge">v0.2.0 · Python 的中文源级方言</p>
+    <h1>用中文写 Python，<br><span class="accent">像母语一样顺手</span></h1>
+    <p class="lead">
+      <code>.bridge</code> 文件先被转译成标准 Python，再交给 CPython 执行。
+      行号逐行对应、报错说中文、英文写法原样透传、混写合法。
+    </p>
+    <div class="buttons">
+      <a class="btn primary" href="#quick">三分钟上手</a>
+      <a class="btn" href="#download">下载便携包</a>
+      <a class="btn ghost" href="#ai">喂给 AI</a>
+    </div>
+    <p class="hint">0.41 MB · 解压到项目根就能跑 · 只要求 Python ≥ 3.10</p>
+  </div>
+  <div class="hero-code">
+    <div class="tab">你好.bridge</div>
+<pre><code>名字 = 输入("你叫什么？")
+如果 名字 是 空:
+    输出（"总得有个名字吧")
+否则:
+    输出（f"你好，{名字}！")
+
+导入 数学
+输出（"圆的面积：", 数学.圆周率 * 2 ** 2)</code></pre>
+  </div>
+</section>
+
+<section id="features" class="section">
+  <h2>它不只是"换皮"</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>中文关键字</h3>
+      <p><code>如果 / 否则 / 对于 / 返回 / 捕获</code>，同一个 Python 关键字有多个中文写法，字符串和注释不翻译。</p>
+    </div>
+    <div class="card">
+      <h3>独有语法</h3>
+      <p><code>标记 / 跳转到</code> 做 goto；<code>运行 / 并行 / 等待完成</code> 让 .bridge 互相调用；<code>读取</code> 直接拿文件/JSON/CSV/数据库对象。</p>
+    </div>
+    <div class="card">
+      <h3>对象化标准库</h3>
+      <p>文档、JSON、表格、SQLite 数据库、HTTP 响应全是"能点字段"的对象；<code>配置.端口 = 9090</code> 然后 <code>保存()</code>。</p>
+    </div>
+    <div class="card">
+      <h3>断点调试</h3>
+      <p>编辑器 F9 打点、Ctrl+F5 调试；命令行 <code>桥.py 调试 x.bridge --断点 3:条件</code>，支持步入/步过/看变量。</p>
+    </div>
+    <div class="card">
+      <h3>便携包</h3>
+      <p>0.41 MB 一个 zip，解压到项目根就完事：不 pip、不配 PATH、不写注册表，删目录即卸载。</p>
+    </div>
+    <div class="card">
+      <h3>为 AI 而生</h3>
+      <p>包里自带 <code>AI速查.txt</code> / <code>AI参考.md</code> / <code>AGENTS.md</code>；<code>桥.py AI</code> 一条命令打印提示词。</p>
+    </div>
+  </div>
+</section>
+
+<section id="quick" class="section">
+  <h2>三分钟上手</h2>
+  <ol class="steps">
+    <li>
+      <h3>解压</h3>
+      <p>把 <code>桥/</code> 目录放到你的项目根，和你的代码平级。</p>
+<pre><code>你的项目/
+├── 桥/            ← 解压出来就这一坨
+└── 你好.bridge    ← 你的代码</code></pre>
+    </li>
+    <li>
+      <h3>写</h3>
+<pre><code>名字 = 输入("你叫什么？")
+输出（f"你好，{名字}！")</code></pre>
+    </li>
+    <li>
+      <h3>跑</h3>
+<pre><code>python 桥/桥.py 运行 你好.bridge
+
+# 文件名打不出来时：
+python 桥/bridge.py 运行 你好.bridge</code></pre>
+    </li>
+  </ol>
+</section>
+
+<section id="ai" class="section alt">
+  <h2>强连接 AI</h2>
+  <p class="lead">桥语言是给 AI 写代码设计的：规则是可读文本，AI 拿到就能写、能自查、能反查。</p>
+  <div class="grid three">
+    <div class="card">
+      <h3>一份速查贴进 prompt</h3>
+      <p><code>AI速查.txt</code>（约 13 KB）：全部中文↔Python 映射，一行一条。</p>
+    </div>
+    <div class="card">
+      <h3>一条命令拿提示词</h3>
+<pre><code>python 桥/桥.py AI
+python 桥/桥.py AI --完整
+python 桥/桥.py AI --json</code></pre>
+    </div>
+    <div class="card">
+      <h3>编码助手入口</h3>
+      <p><code>AGENTS.md</code> 写好了最小规则、常用命令、约定；Cursor/Codex 这类助手会优先读它。</p>
+    </div>
+  </div>
+</section>
+
+<section id="numbers" class="section">
+  <h2>现在有多少东西</h2>
+  <div class="stats">
+    <div><b>108</b><span>中文关键字/内建</span></div>
+    <div><b>18</b><span>中文化模块</span></div>
+    <div><b>38</b><span>句式糖</span></div>
+    <div><b>87</b><span>自检项</span></div>
+    <div><b>0.41 MB</b><span>便携包</span></div>
+  </div>
+  <figure>
+    <img src="编辑器截图.png" alt="桥语言编辑器：树搜索、断点、调试命令栏">
+    <figcaption>自带编辑器：树内搜索、F9 断点、Ctrl+F5 调试、运行时可交互输入</figcaption>
+  </figure>
+</section>
+
+<section id="download" class="section alt">
+  <h2>拿到它</h2>
+  <div class="grid three">
+    <div class="card">
+      <h3>便携包</h3>
+      <p>从 Releases 下载 <code>桥-0.2.0.zip</code>，解压即用。</p>
+      <a class="btn" href="https://github.com/" id="release">Releases</a>
+    </div>
+    <div class="card">
+      <h3>源码</h3>
+      <p>克隆仓库，<code>python 桥.py 运行 示例/示例1.bridge</code>。</p>
+      <a class="btn" href="https://github.com/" id="repo2">GitHub</a>
+    </div>
+    <div class="card">
+      <h3>pip</h3>
+      <p><code>pip install .</code> 之后就能用 <code>bridge 运行 x.bridge</code>。</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>桥语言 Bridge Language · MIT · 用中文写 Python</p>
+</footer>
+
+<script>
+// 仓库地址没写死：把下面这一行改成你的 GitHub 地址即可
+const REPO = "https://github.com/YHSome/bridge-lang";
+for (const id of ["repo", "repo2", "release"]) {
+  const el = document.getElementById(id);
+  if (el) el.href = REPO + (id === "release" ? "/releases" : "");
+}
+</script>
+</body>
+</html>

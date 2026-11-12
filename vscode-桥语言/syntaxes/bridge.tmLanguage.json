@@ -1,0 +1,140 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "桥语言",
+  "scopeName": "source.bridge",
+  "patterns": [
+    {
+      "include": "#注释"
+    },
+    {
+      "include": "#字符串"
+    },
+    {
+      "include": "#数字"
+    },
+    {
+      "include": "#跳转语句"
+    },
+    {
+      "include": "#模块成员"
+    },
+    {
+      "include": "#方法调用"
+    },
+    {
+      "include": "#关键字"
+    }
+  ],
+  "repository": {
+    "注释": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.bridge",
+          "match": "#.*$"
+        },
+        {
+          "name": "comment.block.documentation.bridge",
+          "begin": "\"\"\"",
+          "end": "\"\"\""
+        }
+      ]
+    },
+    "字符串": {
+      "patterns": [
+        {
+          "name": "string.quoted.single.bridge",
+          "match": "'[^'\\\\]*(\\\\.[^'\\\\]*)*'"
+        },
+        {
+          "name": "string.quoted.double.bridge",
+          "begin": "[fFrRbB]?\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.bridge",
+              "match": "\\\\."
+            },
+            {
+              "include": "#插值"
+            }
+          ]
+        }
+      ]
+    },
+    "插值": {
+      "patterns": [
+        {
+          "name": "meta.interpolation.bridge",
+          "begin": "\\{",
+          "end": "\\}",
+          "patterns": [
+            {
+              "include": "$self"
+            }
+          ]
+        }
+      ]
+    },
+    "数字": {
+      "patterns": [
+        {
+          "name": "constant.numeric.bridge",
+          "match": "\\b\\d+(\\.\\d+)?\\b"
+        }
+      ]
+    },
+    "跳转语句": {
+      "patterns": [
+        {
+          "name": "keyword.control.goto.bridge",
+          "match": "\\b(标记|标签|跳转到|跳转|label|goto)\\b"
+        }
+      ]
+    },
+    "模块成员": {
+      "patterns": [
+        {
+          "name": "support.function.module.bridge",
+          "match": "\\b(运行环境|子进程|时间差|数学|日期|时间|正则|系统|路径|随机)\\.[\\u3400-\\u9fffA-Za-z_][\\w]*"
+        },
+        {
+          "name": "support.module.bridge",
+          "match": "\\b(运行环境|子进程|时间差|数学|日期|时间|正则|系统|路径|随机)\\b"
+        }
+      ]
+    },
+    "方法调用": {
+      "patterns": [
+        {
+          "name": "entity.name.function.method.bridge",
+          "match": "\\.([\\u3400-\\u9fff]+)\\s*\\("
+        },
+        {
+          "name": "variable.other.member.bridge",
+          "match": "\\.([\\u3400-\\u9fffA-Za-z_][\\w]*)"
+        }
+      ]
+    },
+    "关键字": {
+      "patterns": [
+        {
+          "name": "keyword.control.bridge",
+          "match": "\\b(文件未找到错误|文件没找到|不然如果|任一为真|停止循环|停止迭代|内存错误|删除文件|名字错误|名称错误|否则如果|四舍五入|基础异常|导入错误|属性错误|排序结果|断言错误|新建文档|权限错误|求最大值|求最小值|求绝对值|溢出错误|等待完成|类型错误|索引错误|读取输入|超时错误|转字符串|逐个编号|递归错误|除零错误|下一个|下一步|不大于|不小于|不成立|不相等|不等于|值错误|全为真|取最大|取最小|取长度|合计值|否则若|子程序|字符串|捕获到|是实例|求总和|求排序|求长度|绝对值|转布尔|转整数|转浮点|键错误|非局部|不是|不然|中断|乘以|交出|产出|任意|作为|倘若|假值|假如|假若|元组|全局|全部|其余|减去|函数|列表|删掉|删除|加上|区间|占位|只要|否则|回传|复述|大于|如果|字典|定义|对于|导入|小于|尝试|布尔|并且|并行|异常|异步|引入|引发|当作|或者|打包|打印|打开|抛出|拉链|捕获|排序|整数|整除|断言|映射|显示|最后|最大|最小|最终|来自|枚举|求和|没有|浮点|相等|真值|确保|空值|等于|等待|类别|类型|继续|而且|至多|至少|范围|虚无|试着|读取|跳出|跳过|载入|输入|输出|过滤|运行|返回|连同|迭代|通过|遍历|长度|除以|除零|集合|与|且|从|假|在|对|带|当|或|是|真|空|类|若|错|非)\\b"
+        },
+        {
+          "name": "constant.language.bridge",
+          "match": "\\b(真|假|空|True|False|None)\\b"
+        },
+        {
+          "name": "entity.name.function.bridge",
+          "match": "\\b(定义|函数|类)\\s+([\\u3400-\\u9fffA-Za-z_][\\w]*)",
+          "captures": {
+            "2": {
+              "name": "entity.name.function.bridge"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,72 @@
+name: 便携包
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: windows-latest
+    env:
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: '1'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: 规则体检
+        shell: bash
+        run: python 桥.py 体检
+
+      - name: 打便携包
+        shell: bash
+        run: python 工具/打包.py
+
+      - name: 解压验收（换个目录真跑一遍）
+        shell: bash
+        run: |
+          python - <<'PY'
+          import shutil, subprocess, sys, zipfile
+          from pathlib import Path
+
+          临时 = Path('.验收').resolve()
+          shutil.rmtree(临时, ignore_errors=True)
+          临时.mkdir()
+          with zipfile.ZipFile('发布/桥-0.2.0.zip') as 包:
+              包.extractall(临时)
+
+          检查 = []
+          def 跑(参数, 输入=None):
+              return subprocess.run([sys.executable, *参数], cwd=临时, input=输入,
+                                    capture_output=True, text=True, encoding='utf-8',
+                                    errors='replace')
+
+          完成 = 跑(['桥/桥.py', '运行', '桥/示例/示例1.bridge'])
+          检查.append(('示例', 完成.returncode == 0 and '你好，世界！' in 完成.stdout))
+
+          (临时 / '我的模块.bridge').write_text('定义 问候(名):\n    返回 f"嗨，{名}"\n',
+                                             encoding='utf-8')
+          (临时 / '我的程序.bridge').write_text('导入 我的模块\n输出（我的模块.问候("CI")）\n',
+                                             encoding='utf-8')
+          完成 = 跑(['桥/桥.py', '运行', '我的程序.bridge'])
+          检查.append(('项目根导入', 完成.returncode == 0 and '嗨，CI' in 完成.stdout))
+
+          完成 = 跑(['桥/bridge.py', '体检'])
+          检查.append(('体检', 完成.returncode == 0))
+
+          for 名称, 好 in 检查:
+              print(('ok  ' if 好 else 'FAIL'), 名称)
+          raise SystemExit(0 if all(好 for _, 好 in 检查) else 1)
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 桥-便携包
+          path: |
+            发布/桥-0.2.0.zip
+            发布/桥/校验.txt

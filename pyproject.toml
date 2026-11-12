@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bridge-lang"
+version = "0.2.0"
+description = "桥语言：用中文写 Python（源级方言 + 转译器 + 编辑器 + 调试器）"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "桥语言" }]
+keywords = ["chinese", "python", "transpiler", "bridge-language", "方言"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Natural Language :: Chinese (Simplified)",
+  "Environment :: Console",
+  "Topic :: Software Development :: Compilers",
+]
+
+[project.scripts]
+bridge = "命令:入口"
+"桥" = "命令:入口"
+
+[project.urls]
+Homepage = "https://example.invalid/bridge-lang"
+
+[tool.setuptools]
+py-modules = ["桥", "命令"]
+
+[tool.setuptools.packages.find]
+include = ["转译器", "转译器.*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+"转译器" = ["规则/*.py"]
+

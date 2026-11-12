@@ -1,0 +1,57 @@
+{
+  "name": "bridge-lang",
+  "displayName": "桥语言",
+  "description": "桥语言：用中文写 Python 的语法高亮 + 运行/调试",
+  "version": "0.1.0",
+  "publisher": "bridge-lang",
+  "engines": { "vscode": "^1.80.0" },
+  "categories": ["Programming Languages"],
+  "keywords": ["bridge", "chinese", "python", "方言"],
+  "activationEvents": ["onLanguage:bridge"],
+  "main": "./extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "bridge",
+        "aliases": ["桥语言", "Bridge"],
+        "extensions": [".bridge"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "bridge",
+        "scopeName": "source.bridge",
+        "path": "./syntaxes/bridge.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      { "command": "bridge.运行", "title": "桥语言：运行当前文件" },
+      { "command": "bridge.调试", "title": "桥语言：调试当前文件（断点按行号）" },
+      { "command": "bridge.打开编辑器", "title": "桥语言：打开自带编辑器" },
+      { "command": "bridge.查词", "title": "桥语言：查选中词的意思" }
+    ],
+    "keybindings": [
+      { "command": "bridge.运行", "key": "f5", "when": "editorLangId == bridge" },
+      { "command": "bridge.打开编辑器", "key": "ctrl+alt+b", "when": "editorLangId == bridge" }
+    ],
+    "configuration": {
+      "title": "桥语言",
+      "properties": {
+        "bridge.python": {
+          "type": "string",
+          "default": "python",
+          "description": "用来跑 桥.py 的 Python 解释器"
+        },
+        "bridge.root": {
+          "type": "string",
+          "default": "",
+          "description": "桥语言根目录（留空则从当前文件逐级向上找 桥.py）"
+        }
+      }
+    }
+  },
+  "scripts": {},
+  "dependencies": {},
+  "license": "MIT"
+}

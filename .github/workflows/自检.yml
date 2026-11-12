@@ -1,0 +1,55 @@
+name: 自检
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    # 三个系统都跑：Windows 上全角标点/OEM 编码最容易出问题，必须有一份
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        python: ['3.11', '3.12', '3.13']
+        exclude:
+          - os: macos-latest
+            python: '3.11'
+
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: '1'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: 自检（规则/示例/金标准/边界）
+        shell: bash
+        run: python 自检.py
+
+      - name: 规则体检
+        shell: bash
+        run: python 桥.py 体检
+
+      - name: 示例都能编译
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from 转译器 import 编译
+          坏 = 0
+          for f in sorted(Path('示例').glob('*.bridge')):
+              try:
+                  编译(f.read_text(encoding='utf-8-sig'), str(f))
+              except Exception as e:
+                  print('FAIL', f, e)
+                  坏 += 1
+          raise SystemExit(1 if 坏 else 0)
+          PY
