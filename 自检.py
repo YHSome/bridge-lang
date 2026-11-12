@@ -797,6 +797,7 @@ def main() -> int:
         断言('标记' in 文本 and '跳转到' in 文本, '参考里没写跳转')
         断言('读取' in 文本 and '表格' in 文本, '参考里没写文件/JSON/表格')
         断言('禁止' in 文本 or '硬规则' in 文本, '参考里没写禁区')
+        断言('releases' in 文本, '参考里没提醒用前查 Release')
         入口 = 项目根 / 'AGENTS.md'
         断言(入口.is_file(), '缺 AGENTS.md：跑 python 工具/导出AI参考.py')
         断言('AI速查.txt' in 入口.read_text(encoding='utf-8'), 'AGENTS.md 没指向速查')

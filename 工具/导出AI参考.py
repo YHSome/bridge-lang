@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 项目根 = Path(__file__).resolve().parent.parent
+发布地址 = 'https://github.com/YHSome/bridge-lang/releases'
 sys.path.insert(0, str(项目根))
 
 from 转译器.规则加载 import 载入规则  # noqa: E402
@@ -115,9 +116,11 @@ def 主函数() -> int:
     行.append('# 桥语言参考（写给 AI 的版本）')
     行.append('')
     行.append('> 用途：把这份文档（或 `AI速查.txt`）贴进 AI 的 system prompt，AI 就能直接写/改桥语言代码。')
+    行.append(f'> **每次使用前，先看 {发布地址} 确认是不是最新版**'
+              f'（本文对应 v{JSON["版本"]}）；版本旧了先升级，再按旧规则写代码容易翻车。')
     行.append('> 全部内容由 `工具/导出AI参考.py` 从 `转译器/规则/` 生成，**不要在文档里手改规则**。')
     行.append('')
-    行.append(f'版本 0.1 · 关键字 {len(关键字)} · 内建 {len(内建)} · 异常 {len(异常)} · '
+    行.append(f'版本 {JSON["版本"]} · 关键字 {len(关键字)} · 内建 {len(内建)} · 异常 {len(异常)} · '
               f'方法 {len(方法)} · 模块 {len(模块)} · 句式糖 {len(糖)}')
     行.append('')
 
@@ -242,6 +245,8 @@ def 主函数() -> int:
     速: list[str] = []
     速.append('# 桥语言速查（可直接贴给 AI）')
     速.append('# 规则：.bridge 是 Python 的中文源级方言，以下中文→Python；多对一；字符串/注释不翻译。')
+    速.append(f'# 版本：v{JSON["版本"]}。每次使用前先看 {发布地址} 是不是最新版；'
+              '版本旧了先升级，再按旧规则写代码容易翻车。')
     速.append('')
     速.append('## 关键字')
     for 英, 中们 in _按目标归并(关键字).items():
@@ -286,6 +291,9 @@ def 主函数() -> int:
         '| `AI速查.txt` | 全部中文↔Python 映射（10 KB，建议整份读入） |',
         '| `AI参考.md` | 完整参考：规则、例外、常见错误、例子 |',
         '| `docs/桥语言规则.json` | 机器可读映射（脚本/工具用） |',
+        '',
+        f'> **动手前先看 {发布地址}**：版本不是最新就先升级桥语言'
+        f'（本文件对应 v{JSON["版本"]}），旧规则可能和代码对不上。',
         '',
         '## 最小规则（否则一定翻车）',
         '',

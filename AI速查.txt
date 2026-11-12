@@ -1,5 +1,6 @@
 # 桥语言速查（可直接贴给 AI）
 # 规则：.bridge 是 Python 的中文源级方言，以下中文→Python；多对一；字符串/注释不翻译。
+# 版本：v0.2.0。每次使用前先看 https://github.com/YHSome/bridge-lang/releases 是不是最新版；版本旧了先升级，再按旧规则写代码容易翻车。
 
 ## 关键字
 lambda <= 匿名函数
