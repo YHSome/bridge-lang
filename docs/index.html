@@ -106,22 +106,21 @@ python 桥/bridge.py 运行 你好.bridge</code></pre>
 </section>
 
 <section id="ai" class="section alt">
-  <h2>强连接 AI</h2>
-  <p class="lead">桥语言是给 AI 写代码设计的：规则是可读文本，AI 拿到就能写、能自查、能反查。</p>
+  <h2>一句话让 Agent 配好环境</h2>
+  <p class="lead">把下面这句原样丢给任意编码 Agent（Cursor / Claude Code / Codex / 通义灵码都行），它会自己下载、解压、验证：</p>
+<pre><code>在当前项目根配好桥语言：从 https://github.com/YHSome/bridge-lang/releases 下载最新的 bridge-lang-*.zip，把里面的 桥/ 目录解压到项目根（目录名不要改），然后运行 `python 桥/桥.py 运行 桥/示例/示例1.bridge` 验证；输出「你好，世界！」就算成功，失败就按 桥/快速开始.md 排查。</code></pre>
   <div class="grid three">
     <div class="card">
-      <h3>一份速查贴进 prompt</h3>
-      <p><code>AI速查.txt</code>（约 13 KB）：全部中文↔Python 映射，一行一条。</p>
+      <h3>它会做什么</h3>
+      <p>查最新 Release → 下载 zip → 解压出 <code>桥/</code> → 跑示例验证。全程不装 pip、不配 PATH、不动注册表。</p>
     </div>
     <div class="card">
-      <h3>一条命令拿提示词</h3>
-<pre><code>python 桥/桥.py AI
-python 桥/桥.py AI --完整
-python 桥/桥.py AI --json</code></pre>
+      <h3>成功长什么样</h3>
+      <p>终端输出「你好，世界！」；之后 <code>python 桥/桥.py AI</code> 能打印速查，<code>python 桥/桥.py 体检</code> 报 0 错误。</p>
     </div>
     <div class="card">
-      <h3>编码助手入口</h3>
-      <p><code>AGENTS.md</code> 写好了最小规则、常用命令、约定；Cursor/Codex 这类助手会优先读它。</p>
+      <h3>想让它写得更稳</h3>
+      <p>补一句「先读 <code>桥/AI速查.txt</code> 和 <code>桥/AGENTS.md</code>，再动代码」——版本和规则就都对得上了。</p>
     </div>
   </div>
 </section>
