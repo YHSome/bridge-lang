@@ -51,7 +51,6 @@ from pathlib import Path
     '示例',
     '教程',
     '特性清单',
-    '图书管理系统',
     'docs',
 ]
 

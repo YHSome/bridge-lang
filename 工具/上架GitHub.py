@@ -3,7 +3,8 @@
     python 工具/上架GitHub.py [--仓库 YHSome/bridge-lang]
 
 做法：Git Data API —— 为每个文件建 blob → 建 tree → 建 commit → 更新 refs/heads/main。
-文件清单以 `git ls-files` 为准（.gitignore 已经把实验/压测/构建产物排掉了）。
+文件清单以 `git ls-files` 为准（.gitignore 已经把实验/压测/构建产物排掉了）；
+远端有、本地没有的文件会**自动从 tree 里删掉**（sha=None），所以撤文件也能用它。
 """
 
 from __future__ import annotations
@@ -40,7 +41,7 @@ class 接口:
         请求.add_header('X-GitHub-Api-Version', '2022-11-28')
         if data:
             请求.add_header('Content-Type', 'application/json')
-        with urllib.request.urlopen(请求, timeout=60) as 回:
+        with urllib.request.urlopen(请求, timeout=90) as 回:
             return json.loads(回.read().decode('utf-8') or '{}')
 
 
@@ -72,9 +73,19 @@ def main(参数: list[str]) -> int:
         父 = 引用['object']['sha']
         旧提交 = 接口对象.调用('GET', f'/git/commits/{父}')
         基树 = 旧提交['tree']['sha']
+        远端 = 接口对象.调用('GET', f'/git/trees/{基树}?recursive=1')['tree']
+        远端路径 = {项['path'] for 项 in 远端 if 项['type'] == 'blob'}
+        本地路径 = set(路径们)
+        删除 = sorted(远端路径 - 本地路径)
+        for 路径 in 删除:
+            树项.append({'path': 路径, 'mode': '100644', 'type': 'blob', 'sha': None})
         新树 = 接口对象.调用('POST', '/git/trees',
                            {'base_tree': 基树, 'tree': 树项})['sha']
         父们 = [父]
+        if 删除:
+            print(f'删除远端多余文件 {len(删除)} 个：')
+            for 路径 in 删除[:10]:
+                print('  -', 路径)
     except urllib.error.HTTPError as 错误:
         if 错误.code != 404:
             raise
@@ -82,7 +93,9 @@ def main(参数: list[str]) -> int:
         父们 = []
 
     提交 = 接口对象.调用('POST', '/git/commits', {
-        'message': '桥语言 v0.2.0：中文 Python 方言 + 便携包 + 编辑器/调试器 + AI 文档 + Pages',
+        'message': subprocess.run(['git', 'log', '-1', '--pretty=%s'], cwd=项目根,
+                                  capture_output=True, text=True, encoding='utf-8',
+                                  errors='replace').stdout.strip() or '更新',
         'tree': 新树,
         'parents': 父们,
     })
@@ -93,7 +106,7 @@ def main(参数: list[str]) -> int:
         try:
             接口对象.调用('POST', '/git/refs', {'ref': 'refs/heads/main', 'sha': 提交['sha']})
         except urllib.error.HTTPError as 错误:
-            if 错误.code == 422:      # 已存在（并发/重跑）
+            if 错误.code == 422:
                 接口对象.调用('PATCH', '/git/refs/heads/main', {'sha': 提交['sha']})
             else:
                 raise
