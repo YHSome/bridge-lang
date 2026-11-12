@@ -1,6 +1,7 @@
 """打「桥」便携包：解压到项目根目录就能用，不装 pip、不配环境变量
 
-    python 工具/打包.py                 # 生成 发布/桥-0.1.0.zip + 发布/桥/ 目录
+    python 工具/打包.py                 # 精简包（只留运行时+示例+AI 文档）
+    python 工具/打包.py --完整          # 完整包（加教程/工具/自检/对照用例/文档）
     python 工具/打包.py --版本 0.2      # 指定版本
 
 设计原则（跟“重装环境”那一套反着来）：
@@ -26,29 +27,36 @@ from pathlib import Path
 发布目录 = 项目根 / '发布'
 
 # 包内保留的文件（相对项目根）
+# 精简包（默认）：只留"能跑起来 + 看示例 + 喂 AI"的东西
 包含文件 = [
     '桥.py',
     'bridge.py',
     '命令.py',
-    '自检.py',
     '桥编辑器.pyw',
     '桥编辑器.bat',
-    'README.md',
+    '快速开始.md',
     'AI参考.md',
     'AI速查.txt',
     'AGENTS.md',
-    '架构.md',
-    '交付说明.md',
-    '快速开始.md',
     'LICENSE',
     '版本.txt',
 ]
 
 包含目录 = [
     '转译器',
+    '示例',
+]
+
+# --完整：把教程、工具、自检、对照用例、文档也带上（开发和教学用）
+完整文件 = [
+    '自检.py',
+    'README.md',
+    '架构.md',
+    '交付说明.md',
+]
+完整目录 = [
     '工具',
     '金标准',
-    '示例',
     '教程',
     '特性清单',
     'docs',
@@ -70,14 +78,14 @@ def _要包含(路径: Path) -> bool:
     return True
 
 
-def 收集() -> list[tuple[Path, str]]:
+def 收集(完整: bool = False) -> list[tuple[Path, str]]:
     """返回 [(磁盘路径, 包内相对路径)]"""
     结果: list[tuple[Path, str]] = []
-    for 名 in 包含文件:
+    for 名 in 包含文件 + (完整文件 if 完整 else []):
         文件 = 项目根 / 名
         if 文件.is_file():
             结果.append((文件, 名))
-    for 目录名 in 包含目录:
+    for 目录名 in 包含目录 + (完整目录 if 完整 else []):
         目录 = 项目根 / 目录名
         if not 目录.is_dir():
             continue
@@ -125,8 +133,8 @@ def 生成校验(包目录: Path, 版本: str) -> Path:
     return 校验文件
 
 
-def 打包(版本: str, 只留目录: bool) -> int:
-    文件们 = 收集()
+def 打包(版本: str, 只留目录: bool, 完整: bool = False) -> int:
+    文件们 = 收集(完整)
     包目录 = 发布目录 / '桥'
     发布目录.mkdir(parents=True, exist_ok=True)
 
@@ -137,7 +145,7 @@ def 打包(版本: str, 只留目录: bool) -> int:
     生成校验(包目录, 版本)
 
     if not 只留目录:
-        压缩包 = 发布目录 / f'桥-{版本}.zip'
+        压缩包 = 发布目录 / f'桥-{版本}{"-完整" if 完整 else ""}.zip'
         压缩包.unlink(missing_ok=True)
         with zipfile.ZipFile(压缩包, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as 包:
             for 文件 in sorted(包目录.rglob('*')):
@@ -173,7 +181,7 @@ def main(参数: list[str]) -> int:
     for i, 段 in enumerate(参数):
         if 段 in ('--版本', '-v') and i + 1 < len(参数):
             版本 = 参数[i + 1]
-    return 打包(版本, 只留目录='--只目录' in 参数)
+    return 打包(版本, 只留目录='--只目录' in 参数, 完整='--完整' in 参数)
 
 
 if __name__ == '__main__':
