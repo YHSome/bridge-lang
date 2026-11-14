@@ -24,7 +24,7 @@
 
 <section class="hero">
   <div class="hero-text">
-    <p class="badge">v0.2.0 · Python 的中文源级方言</p>
+    <p class="badge">v0.3.0 · Python 的中文源级方言</p>
     <h1>用中文写 Python，<br><span class="accent">像母语一样顺手</span></h1>
     <p class="lead">
       <code>.bridge</code> 文件先被转译成标准 Python，再交给 CPython 执行。
@@ -35,7 +35,7 @@
       <a class="btn" href="#download">下载便携包</a>
       <a class="btn ghost" href="#ai">让 Agent 配环境</a>
     </div>
-    <p class="hint">0.13 MB · 解压到项目根就能跑 · 只要求 Python ≥ 3.10</p>
+    <p class="hint">0.14 MB · 解压到项目根就能跑 · 只要求 Python ≥ 3.10</p>
   </div>
   <div class="hero-code">
     <div class="tab">你好.bridge</div>
@@ -70,8 +70,16 @@
       <p>编辑器 F9 打点、Ctrl+F5 调试；命令行 <code>桥.py 调试 x.bridge --断点 3:条件</code>，支持步入/步过/看变量。</p>
     </div>
     <div class="card">
+      <h3>读得懂</h3>
+      <p><code>如果 是主程序:</code>、<code>排队(学生, 按="分数", 大的在前=真)</code>、<code>图 = 读二进制("a.png")</code>——<code>with</code>、<code>lambda</code>、切片冒号都被藏起来了，产物仍是不带它们的标准 Python。</p>
+    </div>
+    <div class="card">
+      <h3>会解释自己</h3>
+      <p>任意词后面加个问号就问它怎么用：<code>如果?</code>、<code>列表.追加 ?</code>；自己写的函数给签名和行号，变量给类型和值，写错还会猜你本来想写啥。</p>
+    </div>
+    <div class="card">
       <h3>便携包</h3>
-      <p>0.13 MB 一个 zip，解压到项目根就完事：不 pip、不配 PATH、不写注册表，删目录即卸载。</p>
+      <p>0.14 MB 一个 zip，解压到项目根就完事：不 pip、不配 PATH、不写注册表，删目录即卸载。</p>
     </div>
     <div class="card">
       <h3>为 AI 而生</h3>
@@ -128,11 +136,11 @@ python 桥/bridge.py 运行 你好.bridge</code></pre>
 <section id="numbers" class="section">
   <h2>现在有多少东西</h2>
   <div class="stats">
-    <div><b>108</b><span>中文关键字/内建</span></div>
+    <div><b>186</b><span>中文关键字/内建</span></div>
     <div><b>18</b><span>中文化模块</span></div>
-    <div><b>38</b><span>句式糖</span></div>
-    <div><b>87</b><span>自检项</span></div>
-    <div><b>0.13 MB</b><span>便携包</span></div>
+    <div><b>44</b><span>句式糖</span></div>
+    <div><b>103</b><span>自检项</span></div>
+    <div><b>0.14 MB</b><span>便携包</span></div>
   </div>
   <figure>
     <img src="编辑器截图.png" alt="桥语言编辑器：树搜索、断点、调试命令栏">
@@ -145,7 +153,7 @@ python 桥/bridge.py 运行 你好.bridge</code></pre>
   <div class="grid three">
     <div class="card">
       <h3>便携包</h3>
-      <p>从 Releases 下载 <code>bridge-lang-0.2.0.zip</code>，解压即用。</p>
+      <p>从 Releases 下载 <code>bridge-lang-0.3.0.zip</code>，解压即用。</p>
       <a class="btn" href="https://github.com/YHSome/bridge-lang/releases" id="release">Releases</a>
     </div>
     <div class="card">

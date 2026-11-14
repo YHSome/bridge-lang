@@ -177,7 +177,7 @@ def 打包(版本: str, 只留目录: bool, 完整: bool = False) -> int:
 
 
 def main(参数: list[str]) -> int:
-    版本 = '0.2.0'
+    版本 = '0.3.0'
     for i, 段 in enumerate(参数):
         if 段 in ('--版本', '-v') and i + 1 < len(参数):
             版本 = 参数[i + 1]

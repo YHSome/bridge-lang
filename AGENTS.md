@@ -9,7 +9,7 @@
 | `AI参考.md` | 完整参考：规则、例外、常见错误、例子 |
 | `docs/桥语言规则.json` | 机器可读映射（脚本/工具用） |
 
-> **动手前先看 https://github.com/YHSome/bridge-lang/releases**：版本不是最新就先升级桥语言（本文件对应 v0.2.0），旧规则可能和代码对不上。
+> **动手前先看 https://github.com/YHSome/bridge-lang/releases**：版本不是最新就先升级桥语言（本文件对应 v0.3.0），旧规则可能和代码对不上。
 
 ## 最小规则（否则一定翻车）
 
