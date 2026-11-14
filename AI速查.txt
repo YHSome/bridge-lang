@@ -62,13 +62,13 @@ with <= 带 / 连同
 assert <= 断言 / 确保
 
 ## 内建
-输出=print / 打印=print / 显示=print / 输入=input / 读取输入=input / 整数=int / 转整数=int / 浮点=float / 转浮点=float / 字符串=str / 转字符串=str / 布尔=bool / 转布尔=bool / 复述=repr / 四舍五入=round / 类型=type / 是实例=isinstance / 打开=open / 运行=桥运行 / 并行=桥并行 / 读取=桥读取 / 打开数据库=桥打开数据库 / 取网页=桥取网页 / 发请求=桥发请求 / 新建文档=桥新建 / 删除文件=桥删除 / 等待完成=桥等待 / 迭代=iter / 下一个=next / 列表=list / 字典=dict / 集合=set / 元组=tuple / 长度=len / 求长度=len / 取长度=len / 范围=range / 区间=range / 绝对值=abs / 求绝对值=abs / 求和=sum / 求总和=sum / 合计值=sum / 最大=max / 求最大值=max / 取最大=max / 最小=min / 求最小值=min / 取最小=min / 排序=sorted / 求排序=sorted / 排序结果=sorted / 枚举=enumerate / 逐个编号=enumerate / 映射=map / 过滤=filter / 任意=any / 任一为真=any / 全部=all / 全为真=all / 拉链=zip / 打包=zip / 商和余=divmod / 时间差=datetime.timedelta / 真值=True / 假值=False / 空值=None / 没有=None
+输出=print / 打印=print / 显示=print / 输入=input / 读取输入=input / 整数=int / 转整数=int / 浮点=float / 转浮点=float / 字符串=str / 转字符串=str / 布尔=bool / 转布尔=bool / 复述=repr / 四舍五入=round / 类型=type / 是实例=isinstance / 打开=open / 运行=桥运行 / 并行=桥并行 / 读取=桥读取 / 打开数据库=桥打开数据库 / 取网页=桥取网页 / 发请求=桥发请求 / 新建文档=桥新建 / 删除文件=桥删除 / 等待完成=桥等待 / 自己=self / 自身=self / 排队=桥排队 / 前几个=桥前几个 / 最后一个=桥最后一个 / 第几个到第几个=桥切片 / 倒过来=桥倒过来 / 读二进制=桥读二进制 / 打开压缩包=桥打开压缩包 / 帮助=桥帮助 / 迭代=iter / 下一个=next / 列表=list / 字典=dict / 集合=set / 元组=tuple / 长度=len / 求长度=len / 取长度=len / 范围=range / 区间=range / 绝对值=abs / 求绝对值=abs / 求和=sum / 求总和=sum / 合计值=sum / 最大=max / 求最大值=max / 取最大=max / 最小=min / 求最小值=min / 取最小=min / 排序=sorted / 求排序=sorted / 排序结果=sorted / 枚举=enumerate / 逐个编号=enumerate / 映射=map / 过滤=filter / 任意=any / 任一为真=any / 全部=all / 全为真=all / 拉链=zip / 打包=zip / 商和余=divmod / 时间差=datetime.timedelta / 真值=True / 假值=False / 空值=None / 没有=None
 
 ## 异常
 网络错误=URLError / HTTP错误=HTTPError / 超时错误=TimeoutError / JSON错误=JSONDecodeError / 数据库错误=DatabaseError / 完整性错误=IntegrityError / 操作错误=OperationalError / 权限错误=PermissionError / 解码错误=UnicodeDecodeError / 编码失败=UnicodeEncodeError / 内存错误=MemoryError / 递归错误=RecursionError / 键错误=KeyError / 索引错误=IndexError / 属性缺失=AttributeError / 类型不符=TypeError / 异常=Exception / 基础异常=BaseException / 名称错误=NameError / 名字错误=NameError / 值错误=ValueError / 类型错误=TypeError / 属性错误=AttributeError / 除零错误=ZeroDivisionError / 除零=ZeroDivisionError / 文件未找到错误=FileNotFoundError / 文件没找到=FileNotFoundError / 断言错误=AssertionError / 停止迭代=StopIteration / 导入错误=ImportError / 溢出错误=OverflowError
 
 ## 方法（点号后）
-追加=append / 添加=append / 加进去=append / 扩展=extend / 批量添加=extend / 插入=insert / 移除=remove / 去掉=remove / 弹出=pop / 取出=pop / 清空=clear / 拷贝=copy / 复制=copy / 排序=sort / 反转=reverse / 倒序=reverse / 计数=count / 索引=index / 内容=items / 条目=items / 键=keys / 键列表=keys / 值=values / 值列表=values / 获取=get / 取值=get / 更新=update / 合并更新=update / 设置默认=setdefault / 拆分=split / 分割=split / 替换=replace / 去除空白=strip / 去空格=strip / 大写=upper / 转大写=upper / 小写=lower / 转小写=lower / 开头是=startswith / 结尾是=endswith / 连接=join / 格式化=format / 找到=find / 读=read / 读取=read / 写=write / 写入=write / 关闭=close / 格式化日期=strftime / 星期几=weekday / 日期部分=date / 天数=days / 返回码=returncode / 标准输出=stdout / 标准错误=stderr / 编码=encode / 解码=decode / 十六进制=hex / 左对齐=ljust / 右对齐=rjust / 居中=center / 补零=zfill / 标题化=title / 首字母大写=capitalize / 去前缀=removeprefix / 去后缀=removesuffix / 是否数字=isdigit / 是否字母=isalpha / 是否空白=isspace / 是否数字字母=isalnum / 十六进制摘要=hexdigest / 摘要值=digest / 出现最多=most_common / 元素们=elements / 减去计数=subtract / 追加左=appendleft / 左弹出=popleft / 入队=put / 出队=get / 出队不等=get_nowait / 入队不等=put_nowait / 任务完成=task_done / 等待完成队列=join / 组=group / 分组=group / 组们=groups / 跨度=span / 开始位置=start / 结束位置=end / 查找=search / 匹配=match / 全部查找=findall / 刷新=flush / 缓冲=buffer
+追加=append / 添加=append / 加进去=append / 扩展=extend / 批量添加=extend / 插入=insert / 移除=remove / 去掉=remove / 弹出=pop / 取出=pop / 清空=clear / 拷贝=copy / 复制=copy / 排序=sort / 反转=reverse / 倒序=reverse / 计数=count / 索引=index / 内容=items / 条目=items / 键=keys / 键列表=keys / 值=values / 值列表=values / 获取=get / 取值=get / 更新=update / 合并更新=update / 设置默认=setdefault / 拆分=split / 分割=split / 替换=replace / 去除空白=strip / 去空格=strip / 大写=upper / 转大写=upper / 小写=lower / 转小写=lower / 开头是=startswith / 结尾是=endswith / 连接=join / 格式化=format / 找到=find / 读=read / 读取=read / 写=write / 写入=write / 关闭=close / 格式化日期=strftime / 星期几=weekday / 日期部分=date / 天数=days / 返回码=returncode / 标准输出=stdout / 标准错误=stderr / 编码=encode / 解码=decode / 十六进制=hex / 左对齐=ljust / 右对齐=rjust / 居中=center / 补零=zfill / 标题化=title / 首字母大写=capitalize / 去前缀=removeprefix / 去后缀=removesuffix / 是否数字=isdigit / 是否字母=isalpha / 是否空白=isspace / 是否数字字母=isalnum / 十六进制摘要=hexdigest / 摘要值=digest / 出现最多=most_common / 元素们=elements / 减去计数=subtract / 追加左=appendleft / 左弹出=popleft / 入队=put / 出队=get / 出队不等=get_nowait / 入队不等=put_nowait / 任务完成=task_done / 等待完成队列=join / 组=group / 分组=group / 组们=groups / 跨度=span / 开始位置=start / 结束位置=end / 查找=search / 匹配=match / 全部查找=findall / 刷新=flush / 缓冲=buffer / 初始化=__init__
 
 ## 模块
 哈希=hashlib  成员: 新建摘要=new / 二五六=sha256 / 五一二=sha512 / 一二八=sha1 / 常用摘要=md5 / 文件摘要=file_digest
@@ -91,6 +91,7 @@ assert <= 断言 / 确保
 集合工具=collections  成员: 计数器=Counter / 默认字典=defaultdict / 双端队列=deque / 有序字典=OrderedDict / 命名元组=namedtuple / 链映射=ChainMap
 
 ## 句式糖（整行）
+«词» [？]：  =>  桥帮助("{词}")
 重复执行直到 «条件» :  =>  while not ({条件}):
 重复执行 «次数» 次：  =>  for _ in range({次数}):
 重复 «次数» 次：  =>  for _ in range({次数}):
@@ -129,6 +130,11 @@ assert <= 断言 / 确保
 给 «目标» 加上 «值»：  =>  {目标} += {值}
 给 «目标» 减去 «值»：  =>  {目标} -= {值}
 输出 / 打印 «参数»：  =>  print({参数})
+如果 / 若 / 假如 / 倘若 / 当 是主程序：  =>  if __name__ == '__main__':
+捕获 «类型» 记作 «名»：  =>  except {类型} as {名}:
+定义 初始化 «参数»）])：  =>  def __init__{参数}:
+定义 显示 «参数»）])：  =>  def __str__{参数}:
+定义 表示 «参数»）])：  =>  def __repr__{参数}:
 
 ## 独有
 标记: 声明跳转目标，只能写在模块顶层或函数/类的第一层
