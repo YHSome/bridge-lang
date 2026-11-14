@@ -2,7 +2,7 @@
   "name": "bridge-lang",
   "displayName": "桥语言",
   "description": "桥语言：中文 Python 方言的语法高亮、代码片段与运行/调试",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "bridge-lang",
   "engines": {
     "vscode": "^1.80.0"

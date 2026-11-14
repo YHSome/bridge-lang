@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bridge-lang"
-version = "0.2.0"
+version = "0.3.0"
 description = "桥语言：用中文写 Python（源级方言 + 转译器 + 编辑器 + 调试器）"
 readme = "README.md"
 requires-python = ">=3.10"
