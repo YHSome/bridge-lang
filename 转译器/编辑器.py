@@ -49,6 +49,7 @@ if str(项目根) not in sys.path:
 
 from 转译器 import 编译, 转译, 载入规则, 方言错误  # noqa: E402
 from 转译器.主转译器 import 分段  # noqa: E402
+from 转译器.协议调试 import 协议前缀  # noqa: E402
 
 临时目录 = 项目根 / '.运行临时'
 规则 = 载入规则()
@@ -105,7 +106,7 @@ def _缩写路径(路径: Path, 最长: int = 26) -> str:
 def 列出桥文件(根: Path, *, 后缀: tuple[str, ...] = ('.bridge',)) -> list[Path]:
     """递归列出目录下的 .bridge（剪枝 + 数量/深度/时间上限）
 
-    为什么要上限：点「↑ 上级」到用户目录甚至磁盘根时，rglob 会扫 AppData/Windows，
+    为什么要上限：切换工作目录到用户目录甚至磁盘根时，递归扫描会碰到 AppData/Windows，
     看起来就是"编辑器卡死/崩溃"。这里到点就停，只显示能显示的那部分。
     """
     import time as _time
@@ -255,6 +256,11 @@ class 桥编辑器:
         self.断点: set[int] = set()
         self.断点表: dict[str, set[int]] = {}   # 每个文件各自的断点
         self.根目录: Path = _载入工作目录() or 项目根
+        self.调试中 = False
+        self.调试历史: list[dict] = []
+        self.调试位置 = -1
+        self.文档们: dict[str, dict] = {}
+        self.标签们: list[str] = []
         self._断点文件 = ''
         self.自动保存 = True                    # 停手 1.2 秒自动存
         self._自动保存任务 = None
@@ -290,6 +296,9 @@ class 桥编辑器:
         tk.Frame(工具栏, width=12, bg=配色['背景']).pack(side='left')
         按钮('▶ 运行', self.运行)
         按钮('🐞 调试', self.调试运行)
+        按钮('下一行', self.调试下一行)
+        按钮('上一行', self.调试上一行)
+        按钮('继续', self.调试继续)
         按钮('格式化', self.格式化文档)
         按钮('试跑选区', self.试跑选区)
         按钮('■ 停止', self.停止)
@@ -336,8 +345,7 @@ class 桥编辑器:
             font=('Microsoft YaHei UI', 8), padx=2,
         )
         self.根标签.pack(side='left', fill='x', expand=True)
-        for 文案, 命令 in (('目录…', self.选择目录), ('↑ 上级', self.上一级目录),
-                          ('桥', self.回到桥目录)):
+        for 文案, 命令 in (('目录…', self.选择目录), ('桥', self.回到桥目录)):
             tk.Button(
                 目录栏, text=文案, command=命令, bd=0, relief='flat',
                 bg='#2f3242', fg=配色['前景'], activebackground='#3d4157',
@@ -393,6 +401,9 @@ class 桥编辑器:
 
         # 编辑区（行号 + 正文）
         编辑框 = tk.Frame(分栏, bg=配色['背景'])
+        标签栏 = tk.Frame(编辑框, bg=配色['背景'])
+        标签栏.pack(side='top', fill='x')
+        self.标签栏 = 标签栏
         self.行号 = tk.Text(
             编辑框, width=5, padx=6, takefocus=0, bd=0, relief='flat',
             bg=配色['行号背景'], fg=配色['行号前景'], font=('Consolas', self.字号),
@@ -407,6 +418,35 @@ class 桥编辑器:
             font=('Consolas', self.字号), padx=8, pady=6,
         )
         self.编辑区.pack(side='left', fill='both', expand=True)
+
+        # 变量面板（调试时实时刷新；不调试时显示占位提示）
+        变量框 = tk.Frame(编辑框, bg=配色['背景'], width=300)
+        变量框.pack(side='right', fill='y')
+        变量框.pack_propagate(False)
+        self.变量标题 = tk.Label(
+            变量框, text='变量（Ctrl+F5 调试时显示）', anchor='w',
+            bg=配色['背景'], fg=配色['行号前景'],
+            font=('Microsoft YaHei UI', 8), padx=4,
+        )
+        self.变量标题.pack(side='top', fill='x')
+        try:
+            ttk.Style().configure('桥.Variables.Treeview', background=配色['行号背景'],
+                                  fieldbackground=配色['行号背景'],
+                                  foreground=配色['前景'], rowheight=20)
+        except tk.TclError:
+            pass
+        self.变量树 = ttk.Treeview(
+            变量框, columns=('变量', '值'), show='headings', height=10,
+            style='桥.Variables.Treeview',
+        )
+        self.变量树.heading('变量', text='变量')
+        self.变量树.heading('值', text='值')
+        self.变量树.column('变量', width=90, anchor='w', stretch=False)
+        self.变量树.column('值', width=190, anchor='w', stretch=True)
+        变量滚动 = tk.Scrollbar(变量框, command=self.变量树.yview, width=12)
+        变量滚动.pack(side='right', fill='y')
+        self.变量树.pack(side='left', fill='both', expand=True)
+        self.变量树.configure(yscrollcommand=变量滚动.set)
 
         编辑滚动 = tk.Scrollbar(编辑框, command=self.编辑区.yview, width=12)
         编辑滚动.pack(side='right', fill='y')
@@ -461,6 +501,7 @@ class 桥编辑器:
         配置.tag_configure('错误行', background='#4a2626', underline=True)
         配置.tag_configure('断点行', background='#4a2f2f')
         配置.tag_configure('断点行', underline=True)
+        配置.tag_configure('调试行', background='#3d3a1f')
         配置.tag_configure('悬停', underline=True)
         配置.tag_lower('当前行')
         配置.tag_lower('错误行')
@@ -479,9 +520,6 @@ class 桥编辑器:
                                      title='选择要编辑的目录（可以选上级）')
         if 选:
             self._切换根(Path(选))
-
-    def 上一级目录(self):
-        self._切换根(self.根目录.parent)
 
     def 回到桥目录(self):
         self._切换根(项目根)
@@ -681,6 +719,15 @@ class 桥编辑器:
         self.根.bind('<F5>', lambda e: self.运行())
         self.根.bind('<F9>', lambda e: self.切换断点())
         self.根.bind('<Control-F5>', lambda e: self.调试运行())
+        self.根.bind('<F10>', lambda e: self.调试下一行())
+        self.根.bind('<Control-w>', lambda e: self.关闭当前标签())
+        self.根.bind('<Control-Tab>', lambda e: self.下一个标签())
+        self.根.bind('<Control-f>', lambda e: self.打开查找(False))
+        self.根.bind('<Control-h>', lambda e: self.打开查找(True))
+        self.根.bind('<Control-space>', lambda e: self.补全())
+        self.根.bind('<F12>', lambda e: self.跳定义())
+        self.编辑区.bind('<Control-Button-1>', self._控制点击)
+        self.根.bind('<Shift-F10>', lambda e: self.调试上一行())
         self.根.bind('<Control-Shift-F5>', lambda e: self.外部终端运行())
         self.根.bind('<Control-Shift-F>', lambda e: self.格式化文档())
         self.编辑区.bind('<F9>', lambda e: self.切换断点())
@@ -719,7 +766,10 @@ class 桥编辑器:
     def _改动(self, 事件=None):
         if self.编辑区.edit_modified():
             self.脏 = True
+            if self.路径 is not None and str(self.路径) in self.文档们:
+                self.文档们[str(self.路径)]['脏'] = True
             self._刷新标题()
+            self._刷新标签栏()
             self.编辑区.edit_modified(False)
             self._安排自动保存()
         return None
@@ -806,6 +856,109 @@ class 桥编辑器:
         行, 列 = self.编辑区.index('insert').split('.')
         self.状态光标.configure(text=f'行 {行}, 列 {int(列) + 1}')
 
+    # ------------------------------------------------------------------ 多标签
+    def _存缓冲(self) -> None:
+        if self.路径 is None:
+            return
+        键 = str(self.路径)
+        self.文档们.setdefault(键, {})
+        self.文档们[键].update({
+            '内容': self.编辑区.get('1.0', 'end-1c'),
+            '脏': self.脏,
+            '光标': self.编辑区.index('insert'),
+        })
+
+    def _刷新标签栏(self) -> None:
+        栏 = getattr(self, '标签栏', None)
+        if 栏 is None:
+            return
+        for 子 in 栏.winfo_children():
+            子.destroy()
+        for 键 in self.标签们:
+            激活 = (self.路径 is not None and 键 == str(self.路径))
+            名 = Path(键).name
+            脏 = bool(self.文档们.get(键, {}).get('脏')) or (
+                self.脏 and 激活)
+            文字 = ('● ' if 脏 else '') + 名
+            按钮 = tk.Button(
+                栏, text=文字, bd=0, relief='flat', padx=8, pady=2,
+                bg='#2f3242' if 激活 else 配色['背景'],
+                fg=配色['前景'] if 激活 else 配色['注释'],
+                activebackground='#3d4157', activeforeground='#ffffff',
+                font=('Microsoft YaHei UI', 8), cursor='hand2',
+                command=lambda k=键: self._切标签(k),
+            )
+            按钮.pack(side='left', padx=(0, 2))
+            关 = tk.Button(
+                栏, text='×', bd=0, relief='flat', padx=2, pady=0,
+                bg='#2f3242' if 激活 else 配色['背景'], fg=配色['注释'],
+                activebackground='#5a2a2a', activeforeground='#ffffff',
+                font=('Microsoft YaHei UI', 8), cursor='hand2',
+                command=lambda k=键: self._关标签(k),
+            )
+            关.pack(side='left', padx=(0, 8))
+
+    def _切标签(self, 键: str) -> None:
+        if self.路径 is not None and str(self.路径) == 键:
+            return
+        self._存缓冲()
+        if 键 not in self.文档们:
+            return
+        文档 = self.文档们[键]
+        self.编辑区.delete('1.0', 'end')
+        self.编辑区.insert('1.0', 文档.get('内容', ''))
+        self.编辑区.mark_set('insert', 文档.get('光标', '1.0'))
+        self.编辑区.see('insert')
+        self.编辑区.edit_modified(False)
+        self.路径 = Path(键)
+        self.脏 = bool(文档.get('脏'))
+        if str(self.路径) != str(getattr(self, '_断点文件', '')):
+            if self._断点文件:
+                self.断点表[self._断点文件] = set(self.断点)
+            self._断点文件 = str(self.路径)
+            self.断点 = set(self.断点表.get(str(self.路径), set()))
+        self._重画断点()
+        self._刷新标题()
+        self._刷新标签栏()
+        self.更新行号()
+        self.高亮()
+        self._置状态(f'切到 {self.路径.name}')
+
+    def _关标签(self, 键: str) -> None:
+        当前 = self.路径 is not None and str(self.路径) == 键
+        if 当前 and self.脏:
+            选择 = messagebox.askyesnocancel('还没保存', f'{Path(键).name} 有改动，先保存吗？')
+            if 选择 is None:
+                return
+            if 选择:
+                if not self.保存():
+                    return
+        self.文档们.pop(键, None)
+        if 键 in self.标签们:
+            self.标签们.remove(键)
+        if 当前:
+            self.路径 = None
+            if self.标签们:
+                self._切标签(self.标签们[-1])
+            else:
+                self.编辑区.delete('1.0', 'end')
+                self.脏 = False
+                self._刷新标题()
+        self._刷新标签栏()
+
+    def 关闭当前标签(self):
+        if self.路径 is not None:
+            self._关标签(str(self.路径))
+        return 'break'
+
+    def 下一个标签(self):
+        if not self.标签们:
+            return 'break'
+        当前 = str(self.路径) if self.路径 else ''
+        i = self.标签们.index(当前) if 当前 in self.标签们 else -1
+        self._切标签(self.标签们[(i + 1) % len(self.标签们)])
+        return 'break'
+
     def _刷新标题(self) -> None:
         名 = self.路径.name if self.路径 else '未命名.bridge'
         self.根.title(f'{"*" if self.脏 else ""}桥语言编辑器 · {名}')
@@ -828,22 +981,32 @@ class 桥编辑器:
             if not 选择:
                 return
             路径 = Path(选择)
-        try:
-            内容 = 路径.read_text(encoding='utf-8-sig').replace('\r\n', '\n')
-        except OSError as 错误:
-            messagebox.showerror('打开失败', str(错误))
-            return
+        路径 = Path(路径).resolve()
+        if self.路径 is not None:
+            self._存缓冲()
+        键 = str(路径)
+        if 键 not in self.文档们:
+            try:
+                内容 = 路径.read_text(encoding='utf-8-sig').replace('\r\n', '\n')
+            except OSError as 错误:
+                messagebox.showerror('打开失败', str(错误))
+                return
+            self.文档们[键] = {'内容': 内容, '脏': False, '光标': '1.0'}
+            self.标签们.append(键)
+        文档 = self.文档们[键]
         self.编辑区.delete('1.0', 'end')
-        self.编辑区.insert('1.0', 内容)
+        self.编辑区.insert('1.0', 文档['内容'])
+        self.编辑区.mark_set('insert', 文档.get('光标', '1.0'))
+        self.编辑区.see('insert')
         self.编辑区.edit_modified(False)
-        self.路径 = Path(路径)
+        self.路径 = 路径
         try:
             self.路径.resolve().relative_to(self.根目录.resolve())
         except ValueError:
             self.根目录 = self.路径.resolve().parent   # 打开 ../ 的文件：把根挪过去
             self._保存工作目录()
             self.刷新文件树()
-        self.脏 = False
+        self.脏 = bool(文档.get('脏'))
         旧文件 = str(getattr(self, '_断点文件', ''))
         if 旧文件 and 旧文件 != str(self.路径):
             self.断点表[旧文件] = set(self.断点)      # 存下上一个文件的断点
@@ -851,6 +1014,7 @@ class 桥编辑器:
         self.断点 = set(self.断点表.get(str(self.路径), set()))
         self._重画断点()
         self._刷新标题()
+        self._刷新标签栏()
         self.更新行号()
         self.高亮()
         self._置状态(f'已打开 {self.路径.name}')
@@ -867,7 +1031,11 @@ class 桥编辑器:
             messagebox.showerror('保存失败', str(错误))
             return False
         self.脏 = False
+        if str(self.路径) in self.文档们:
+            self.文档们[str(self.路径)]['内容'] = self.编辑区.get('1.0', 'end-1c')
+            self.文档们[str(self.路径)]['脏'] = False
         self._刷新标题()
+        self._刷新标签栏()
         self._置状态(f'已保存 {self.路径.name}')
         self._保存时检查()
         return True
@@ -880,7 +1048,12 @@ class 桥编辑器:
         )
         if not 选择:
             return False
-        self.路径 = Path(选择)
+        self.路径 = Path(选择).resolve()
+        键 = str(self.路径)
+        if 键 not in self.文档们:
+            self.文档们[键] = {'内容': self.编辑区.get('1.0', 'end-1c'),
+                              '脏': True, '光标': self.编辑区.index('insert')}
+            self.标签们.append(键)
         return self.保存()
 
 
@@ -899,6 +1072,258 @@ class 桥编辑器:
         self.脏 = True
         self._刷新标题()
         self._置状态('已格式化（Tab→4 空格，去行尾空白）', 配色['成功'])
+        return 'break'
+
+    # ------------------------------------------------------------------ 查找/替换
+    def 打开查找(self, 替换: bool = False):
+        窗 = getattr(self, '_查找窗', None)
+        if 窗 is not None and 窗.winfo_exists():
+            窗.lift()
+            self._查找框.focus_set()
+            return 'break'
+        窗 = tk.Toplevel(self.根)
+        窗.title('替换' if 替换 else '查找')
+        窗.transient(self.根)
+        窗.configure(bg=配色['背景'])
+        窗.resizable(False, False)
+        self._查找窗 = 窗
+        tk.Label(窗, text='查找', bg=配色['背景'], fg=配色['前景']).grid(
+            row=0, column=0, padx=8, pady=(10, 2), sticky='w')
+        self._查找框 = tk.Entry(窗, width=32, bg='#2f3242', fg=配色['前景'],
+                               insertbackground=配色['前景'], bd=0)
+        self._查找框.grid(row=0, column=1, padx=8, pady=(10, 2), sticky='we')
+        tk.Label(窗, text='替换为', bg=配色['背景'], fg=配色['前景']).grid(
+            row=1, column=0, padx=8, pady=2, sticky='w')
+        self._替换框 = tk.Entry(窗, width=32, bg='#2f3242', fg=配色['前景'],
+                               insertbackground=配色['前景'], bd=0)
+        self._替换框.grid(row=1, column=1, padx=8, pady=2, sticky='we')
+        if not 替换:
+            self._替换框.configure(state='disabled')
+        按钮们 = tk.Frame(窗, bg=配色['背景'])
+        按钮们.grid(row=2, column=0, columnspan=2, pady=8)
+        for 文案, 命令 in (('下一个', self.查找下一个), ('替换', self.替换当前),
+                          ('全部替换', self.全部替换)):
+            tk.Button(按钮们, text=文案, command=命令, bd=0, relief='flat',
+                      bg='#2f3242', fg=配色['前景'], padx=10, pady=3,
+                      activebackground='#3d4157', cursor='hand2').pack(
+                side='left', padx=3)
+        self._查找框.bind('<Return>', lambda e: self.查找下一个())
+        窗.bind('<Escape>', lambda e: self._关查找())
+        self._查找框.focus_set()
+        return 'break'
+
+    def _关查找(self):
+        窗 = getattr(self, '_查找窗', None)
+        if 窗 is not None and 窗.winfo_exists():
+            窗.destroy()
+        self._查找窗 = None
+        return 'break'
+
+    def 查找下一个(self, 事件=None):
+        词 = getattr(self, '_查找框', None).get() if getattr(self, '_查找框', None) else ''
+        if not 词:
+            return 'break'
+        起 = self.编辑区.index('insert')
+        位置 = self.编辑区.search(词, 起, stopindex='end', nocase=True)
+        if not 位置:
+            位置 = self.编辑区.search(词, '1.0', stopindex='end', nocase=True)
+        if not 位置:
+            self._置状态(f'没找到：{词}', 配色['错误'])
+            return 'break'
+        self.编辑区.tag_remove('sel', '1.0', 'end')
+        末 = f'{位置}+{len(词)}c'
+        self.编辑区.tag_add('sel', 位置, 末)
+        self.编辑区.mark_set('insert', 末)
+        self.编辑区.see(位置)
+        return 'break'
+
+    def 替换当前(self):
+        try:
+            选中 = self.编辑区.get('sel.first', 'sel.last')
+        except tk.TclError:
+            return self.查找下一个()
+        词 = self._查找框.get()
+        if 选中 != 词:
+            return self.查找下一个()
+        新词 = self._替换框.get()
+        self.编辑区.delete('sel.first', 'sel.last')
+        self.编辑区.insert('insert', 新词)
+        self.脏 = True
+        return self.查找下一个()
+
+    def 全部替换(self):
+        词 = self._查找框.get()
+        if not 词:
+            return 'break'
+        新词 = self._替换框.get()
+        数 = 0
+        位置 = '1.0'
+        while True:
+            位置 = self.编辑区.search(词, 位置, stopindex='end', nocase=True)
+            if not 位置:
+                break
+            末 = f'{位置}+{len(词)}c'
+            self.编辑区.delete(位置, 末)
+            self.编辑区.insert(位置, 新词)
+            位置 = f'{位置}+{len(新词)}c'
+            数 += 1
+        self.脏 = True
+        self._置状态(f'替换了 {数} 处', 配色['成功'] if 数 else 配色['注释'])
+        return 'break'
+
+    # ------------------------------------------------------------------ 补全
+    def _光标前缀(self) -> tuple[str, str]:
+        行, 列 = (int(v) for v in self.编辑区.index('insert').split('.'))
+        文本 = self.编辑区.get(f'{行}.0', f'{行}.{列}')
+        import re as _re
+
+        匹配 = _re.search(r'[\u3400-\u9fffA-Za-z0-9_.]+$', 文本)
+        return 文本[:列 - len(匹配.group(0))] if 匹配 else 文本, (
+            匹配.group(0) if 匹配 else '')
+
+    def _候选词(self, 前缀: str) -> list[str]:
+        候选: set[str] = set()
+        if '.' in 前缀:
+            模块, _, 尾 = 前缀.rpartition('.')
+            成员 = (载入规则().get('成员') or {}).get(
+                (载入规则().get('模块') or {}).get(模块, 模块)) or {}
+            成员2 = (载入规则().get('成员') or {}).get(模块, {})
+            候选.update(k for k in {**成员, **成员2} if k.startswith(尾))
+        else:
+            for 表 in ('关键字', '内建', '异常', '模块', '方法'):
+                候选.update((载入规则().get(表) or {}).keys())
+            for 成员 in (载入规则().get('成员') or {}).values():
+                候选.update(成员.keys())
+            # 当前文件里的定义/变量
+            import re as _re
+
+            for 行 in self.编辑区.get('1.0', 'end-1c').splitlines():
+                匹配 = _re.match(r'\s*(?:定义|类|def|class)\s+([\w\u3400-\u9fff]+)', 行)
+                if 匹配:
+                    候选.add(匹配.group(1))
+                匹配 = _re.match(r'\s*([\w\u3400-\u9fff]+)\s*=(?!=)', 行)
+                if 匹配:
+                    候选.add(匹配.group(1))
+        前缀尾 = 前缀.rsplit('.', 1)[-1]
+        return sorted({词 for 词 in 候选 if 词.startswith(前缀尾)})[:60]
+
+    def 补全(self, 事件=None):
+        _, 前缀 = self._光标前缀()
+        if not 前缀:
+            self._置状态('先把词打一半再补全', 配色['注释'])
+            return 'break'
+        候选 = self._候选词(前缀)
+        if not 候选:
+            self._置状态(f'没有以「{前缀}」开头的词', 配色['注释'])
+            return 'break'
+        if len(候选) == 1:
+            self._插入补全(前缀, 候选[0])
+            return 'break'
+        窗 = tk.Toplevel(self.根)
+        窗.overrideredirect(True)
+        窗.configure(bg=配色['背景'])
+        列 = tk.Listbox(窗, height=min(10, len(候选)), width=24,
+                        bg='#2f3242', fg=配色['前景'], bd=0,
+                        selectbackground=配色['选'], activestyle='none')
+        列.pack()
+        for 词 in 候选:
+            列.insert('end', 词)
+        列.selection_set(0)
+        x, y, _, 高 = self.编辑区.bbox('insert') or (0, 0, 0, 18)
+        窗.geometry(f'+{self.编辑区.winfo_rootx() + x}+{self.编辑区.winfo_rooty() + y + 高}')
+        列.focus_set()
+
+        def 选中():
+            取 = 列.curselection()
+            if 取:
+                self._插入补全(前缀, 列.get(取[0]))
+            窗.destroy()
+
+        列.bind('<Return>', lambda e: 选中())
+        列.bind('<Tab>', lambda e: 选中())
+        列.bind('<Double-Button-1>', lambda e: 选中())
+        列.bind('<Escape>', lambda e: 窗.destroy())
+        列.bind('<Up>', lambda e: (列.selection_clear(0, 'end'),
+                                   列.selection_set((列.curselection()[0] - 1) % len(候选))
+                                   if 列.curselection() else 列.selection_set(0)))
+        列.bind('<Down>', lambda e: (列.selection_clear(0, 'end'),
+                                     列.selection_set((列.curselection()[0] + 1) % len(候选))
+                                     if 列.curselection() else 列.selection_set(0)))
+        return 'break'
+
+    def _插入补全(self, 前缀: str, 词: str):
+        尾 = 前缀.rsplit('.', 1)[-1] if '.' in 前缀 else 前缀
+        起 = f'insert - {len(尾)}c'
+        止 = 'insert'
+        self.编辑区.delete(起, 止)
+        self.编辑区.insert('insert', 词)
+        self.脏 = True
+
+    # ------------------------------------------------------------------ 跳转定义
+    def _词在索引(self, 索引: str) -> str:
+        import re as _re
+
+        行, 列 = (int(v) for v in 索引.split('.'))
+        文本 = self.编辑区.get(f'{行}.0', f'{行}.end')
+        if 列 >= len(文本):
+            return ''
+        for 匹配 in _re.finditer(r'[\w\u3400-\u9fff]+', 文本):
+            if 匹配.start() <= 列 < 匹配.end():
+                return 匹配.group(0)
+        return ''
+
+    def _找定义行(self, 词: str, 文本: str) -> int | None:
+        import re as _re
+
+        模式 = _re.compile(r'\s*(?:定义|类|def|class)\s+' + _re.escape(词) + r'\b')
+        for 行号, 行 in enumerate(文本.splitlines(), 1):
+            if 模式.match(行):
+                return 行号
+        return None
+
+    def 跳定义(self, 事件=None):
+        词 = self._词在索引(self.编辑区.index('insert'))
+        if not 词:
+            return 'break'
+        行 = self._找定义行(词, self.编辑区.get('1.0', 'end-1c'))
+        if 行:
+            self.编辑区.mark_set('insert', f'{行}.0')
+            self.编辑区.see(f'{行}.0')
+            self._置状态(f'{词} 定义在第 {行} 行', 配色['成功'])
+            return 'break'
+        # 全工程再找
+        for 文件 in 列出桥文件(self.根目录):
+            try:
+                文本 = 文件.read_text(encoding='utf-8-sig')
+            except OSError:
+                continue
+            if 文件.resolve() == (self.路径.resolve() if self.路径 else None):
+                continue
+            行 = self._找定义行(词, 文本)
+            if 行:
+                self.打开(文件)
+                self.编辑区.mark_set('insert', f'{行}.0')
+                self.编辑区.see(f'{行}.0')
+                self._置状态(f'{词} 在 {文件.name} 第 {行} 行', 配色['成功'])
+                return 'break'
+        self._置状态(f'没找到 {词} 的定义', 配色['错误'])
+        return 'break'
+
+    def _控制点击(self, 事件):
+        索引 = self.编辑区.index(f'@{事件.x},{事件.y}')
+        词 = self._词在索引(索引)
+        if 词:
+            self.编辑区.mark_set('insert', 索引)
+            self.跳定义()
+        return 'break'
+
+    # ------------------------------------------------------------------ 调试继续
+    def 调试继续(self):
+        if not self.调试中:
+            self._置状态('先按 Ctrl+F5 开始调试', 配色['注释'])
+            return 'break'
+        self._发调试命令('继续')
+        self._置状态('继续到下一个断点…', 配色['内建'])
         return 'break'
 
     # ------------------------------------------------------------------ 调试
@@ -949,6 +1374,84 @@ class 桥编辑器:
             return
         self._置状态('已在外部终端运行（输出不在编辑器里）', 配色['内建'])
 
+    # ------------------------------------------------------------------ 调试面板
+    def _刷新调试按钮(self) -> None:
+        try:
+            self.调试命令框.configure(state='disabled' if self.调试中 else 'normal')
+        except tk.TclError:
+            pass
+
+    def _发调试命令(self, 命令: str) -> None:
+        if not self.进程 or not self.进程.stdin:
+            self._置状态('没有在调试的程序', 配色['错误'])
+            return
+        try:
+            import json as _json
+
+            self.进程.stdin.write((_json.dumps({'命令': 命令}) + '\n').encode('utf-8'))
+            self.进程.stdin.flush()
+        except (OSError, ValueError):
+            self._置状态('发送调试命令失败（进程可能已经结束）', 配色['错误'])
+
+    def _收调试事件(self, 事件: dict) -> None:
+        种类 = 事件.get('事件')
+        if 种类 == '开始':
+            self._置状态(f'调试开始：{Path(事件.get("文件", "")).name}', 配色['内建'])
+        elif 种类 == '停':
+            self.调试历史.append(事件)
+            self.调试位置 = len(self.调试历史) - 1
+            self._显示调试快照(事件)
+        elif 种类 == '提示':
+            self._置状态(str(事件.get('消息', '')), 配色['注释'])
+        elif 种类 == '错误':
+            self._写输出(str(事件.get('文本', '')) + '\n', '错误')
+        elif 种类 == '结束':
+            self.调试中 = False
+            self._刷新调试按钮()
+            self.编辑区.tag_remove('调试行', '1.0', 'end')
+            self._置状态(f'调试结束（退出码 {事件.get("退出码")}）', 配色['成功'])
+
+    def _显示调试快照(self, 快照: dict) -> None:
+        行号 = int(快照.get('行', 0))
+        self.编辑区.tag_remove('调试行', '1.0', 'end')
+        if 行号:
+            self.编辑区.tag_add('调试行', f'{行号}.0', f'{行号}.end+1c')
+            self.编辑区.see(f'{行号}.0')
+        变量 = 快照.get('变量') or {}
+        self.变量树.delete(*self.变量树.get_children(''))
+        for 名 in sorted(变量):
+            项 = 变量[名]
+            值 = 项.get('值', '') if isinstance(项, dict) else str(项)
+            self.变量树.insert('', 'end', values=(名, 值))
+        self.变量标题.configure(
+            text=f'变量 · 第 {行号} 行（{len(变量)} 个）' if 行号 else '变量')
+        if 行号:
+            self._置状态(f'调试：第 {行号} 行  {快照.get("源码", "")}', 配色['内建'])
+
+    def 调试下一行(self):
+        if not self.调试中:
+            self._置状态('先按 Ctrl+F5 开始调试', 配色['注释'])
+            return 'break'
+        if self.调试位置 < len(self.调试历史) - 1:
+            self.调试位置 += 1
+            self._显示调试快照(self.调试历史[self.调试位置])
+        else:
+            self._发调试命令('下一行')
+        return 'break'
+
+    def 调试上一行(self):
+        if not self.调试中 or not self.调试历史:
+            self._置状态('还没有调试记录', 配色['注释'])
+            return 'break'
+        if self.调试位置 > 0:
+            self.调试位置 -= 1
+            self._显示调试快照(self.调试历史[self.调试位置])
+            self._置状态(f'回看第 {self.调试历史[self.调试位置].get("行")} 行（未重新执行）',
+                        配色['注释'])
+        else:
+            self._置状态('已经是第一步了', 配色['注释'])
+        return 'break'
+
     def 调试运行(self):
         """Ctrl+F5：按断点调试；没有断点就停在第 1 行"""
         if self.运行中:
@@ -957,11 +1460,15 @@ class 桥编辑器:
         目标 = self._运行文件()
         if 目标 is None:
             return
+        self.调试历史 = []
+        self.调试位置 = -1
+        self.变量树.delete(*self.变量树.get_children(''))
         self._启动(目标, 说明='调试', 调试=True)
-        self._置状态('调试中：在下面「调试命令」里敲 n / c / p 变量 / l / q',
+        self._刷新调试按钮()
+        self._置状态('调试中：F10 下一行 / Shift+F10 上一行（回看）/ 或点工具栏按钮',
                     配色['内建'])
         try:
-            self.调试命令框.focus_set()
+            self.编辑区.focus_set()
         except tk.TclError:
             pass
 
@@ -1085,7 +1592,10 @@ class 桥编辑器:
         elif 调试:
             断点参数 = ','.join(str(n) for n in sorted(self.断点)) or '1'
             命令 = [sys.executable, str(项目根 / '桥.py'), '调试', str(目标),
-                    '--断点', 断点参数]
+                    '--断点', 断点参数, '--协议']
+            self.调试中 = True
+            self.调试历史 = []
+            self.调试位置 = -1
         else:
             命令 = [sys.executable, str(项目根 / '桥.py'), '运行', str(目标)]
 
@@ -1116,23 +1626,38 @@ class 桥编辑器:
         self.根.after(40, self._收输出)
 
     def _读输出(self, 进程: subprocess.Popen) -> None:
-        """按字节块读：程序打印 `提示：`（没有换行）时也能立刻显示出来"""
+        """按字节块读；调试模式下把 `@@桥调试@@` 行解析成事件"""
         import codecs
+        import json as _json
         import os as _os
 
         解码 = codecs.getincrementaldecoder('utf-8')('replace')
         文件号 = 进程.stdout.fileno()
+        缓冲 = ''
         try:
             while True:
                 块 = _os.read(文件号, 4096)
                 if not 块:
                     break
                 文本 = 解码.decode(块)
-                if 文本:
+                if not 文本:
+                    continue
+                if not self.调试中:
                     self.输出队列.put(('行', 文本))
-            尾巴 = 解码.decode(b'', final=True)
-            if 尾巴:
-                self.输出队列.put(('行', 尾巴))
+                    continue
+                缓冲 += 文本
+                while '\n' in 缓冲:
+                    行, 缓冲 = 缓冲.split('\n', 1)
+                    行 = 行.rstrip('\r')
+                    if 行.startswith(协议前缀):
+                        try:
+                            self.输出队列.put(('调试', _json.loads(行[len(协议前缀):])))
+                        except _json.JSONDecodeError:
+                            self.输出队列.put(('行', 行 + '\n'))
+                    elif 行:
+                        self.输出队列.put(('行', 行 + '\n'))
+            if 缓冲:
+                self.输出队列.put(('行', 缓冲))
         except (OSError, ValueError):
             pass
         finally:
@@ -1144,6 +1669,9 @@ class 桥编辑器:
                 种类, 值 = self.输出队列.get_nowait()
             except queue.Empty:
                 break
+            if 种类 == '调试':
+                self._收调试事件(值)
+                continue
             if 种类 == '行':
                 标签 = '错误' if any(k in 值 for k in ('Error', 'Traceback', '错误', '失败')) else None
                 self._写输出(值, 标签)
@@ -1154,6 +1682,8 @@ class 桥编辑器:
             else:
                 self.运行中 = False
                 self.进程 = None
+                self.调试中 = False
+                self._刷新调试按钮()
                 if 值 == 0:
                     self._置状态('运行结束（退出码 0）', 配色['成功'])
                     self._写输出('\n[退出码 0]\n', '成功')
@@ -1164,6 +1694,8 @@ class 桥编辑器:
             self.根.after(40, self._收输出)
 
     def 停止(self) -> None:
+        self.调试中 = False
+        self._刷新调试按钮()
         if self.进程 and self.进程.poll() is None:
             try:
                 self.进程.kill()

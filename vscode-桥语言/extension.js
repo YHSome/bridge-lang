@@ -14,6 +14,7 @@ function 激活(context) {
         vscode.commands.registerCommand('bridge.调试', () => 跑文件(true)),
         vscode.commands.registerCommand('bridge.打开编辑器', 打开编辑器),
         vscode.commands.registerCommand('bridge.查词', 查词),
+        vscode.commands.registerCommand('bridge.设为桥语言', 设为桥语言),
     );
 }
 
@@ -104,3 +105,13 @@ function 查词() {
 function 失活() {}
 
 module.exports = { 激活, 失活 };
+
+async function 设为桥语言() {
+    const 编辑器 = vscode.window.activeTextEditor;
+    if (!编辑器) {
+        vscode.window.showWarningMessage('先打开一个文件');
+        return;
+    }
+    await vscode.languages.setTextDocumentLanguage(编辑器.document, 'bridge');
+    vscode.window.showInformationMessage('已切换为桥语言语法（bridge）');
+}

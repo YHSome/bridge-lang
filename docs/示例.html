@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>桥语言示例</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav">
+  <a class="brand" href="index.html">桥语言</a>
+  <nav><a href="index.html">首页</a><a href="示例.html">示例</a>
+  <a href="https://github.com/YHSome/bridge-lang">GitHub</a></nav>
+</header>
+<main>
+  <section class="hero" style="grid-template-columns:1fr;padding:48px 0 24px">
+    <div>
+      <span class="badge">示例 · 全部可运行</span>
+      <h1>看代码，比看文档快</h1>
+      <p class="lead">这些是仓库里的 <code>.bridge</code> 示例，覆盖跳转、并行、文档、JSON、表格、
+      数据库、网络、调试。下载便携包后复制到项目里就能跑。</p>
+      <div class="buttons">
+        <a class="btn primary" href="https://github.com/YHSome/bridge-lang/releases">下载便携包</a>
+        <a class="btn ghost" href="index.html">回首页</a>
+      </div>
+      <p class="hint">每个示例只展示前 16 行，全文在 GitHub。</p>
+    </div>
+  </section>
+  <section class="section">
+    <h2>全部示例</h2>
+    <div class="grid three">
+<div class="card 示例卡">
+  <h3>JSON节点</h3>
+  <p>读取和操作 JSON：`读取(&quot;x.json&quot;)` 得到能按字段操作的对象</p>
+<pre><code># 读取和操作 JSON：`读取(&quot;x.json&quot;)` 得到能按字段操作的对象
+# 运行：python 桥.py 运行 示例/特性/JSON节点.bridge
+
+配置 = 读取(&quot;./配置.json&quot;)
+
+输出（&quot;站点名：&quot;, 配置.站点名）          # 属性写法
+输出（&quot;端口：&quot;, 配置[&quot;端口&quot;]）           # 下标写法，两种都行
+输出（&quot;数据库主机：&quot;, 配置.数据库.主机）   # 嵌套对象一层层点
+输出（&quot;第一个管理员：&quot;, 配置.管理员[0]）   # 数组照常用下标
+输出（&quot;条目数：&quot;, 配置.条目数）
+
+配置.端口 = 9090
+配置.数据库.主机 = &quot;localhost&quot;
+配置.管理员.追加（&quot;王五&quot;)                 # 数组追加
+配置.保存()
+
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E7%A4%BA%E4%BE%8B/%E7%89%B9%E6%80%A7/JSON%E8%8A%82%E7%82%B9.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>子程序</h3>
+  <p>被 运行与并行.bridge 调用的&quot;子程序&quot;</p>
+<pre><code># 被 运行与并行.bridge 调用的&quot;子程序&quot;
+输出（&quot;你好，世界！&quot;)
+返回 1</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E7%A4%BA%E4%BE%8B/%E7%89%B9%E6%80%A7/%E5%AD%90%E7%A8%8B%E5%BA%8F.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>数据库</h3>
+  <p>桥语言示例</p>
+<pre><code>导入 路径
+
+库 = 读取(&quot;./示例数据库.db&quot;)
+书表 = 库.建表(&quot;图书&quot;, {
+    &quot;书名&quot;: &quot;TEXT NOT NULL&quot;,
+    &quot;作者&quot;: &quot;TEXT&quot;,
+    &quot;册数&quot;: &quot;INTEGER DEFAULT 1&quot;,
+})
+
+书表.插入({&quot;书名&quot;: &quot;三体&quot;, &quot;作者&quot;: &quot;刘慈欣&quot;, &quot;册数&quot;: 3})
+书表.插入({&quot;书名&quot;: &quot;活着&quot;, &quot;作者&quot;: &quot;余华&quot;, &quot;册数&quot;: 2})
+书表.插入({&quot;书名&quot;: &quot;球状闪电&quot;, &quot;作者&quot;: &quot;刘慈欣&quot;, &quot;册数&quot;: 1})
+
+输出（&quot;行数：&quot;, 书表.行数)
+输出（&quot;全部：&quot;, 书表.全部())
+输出（&quot;刘慈欣的书：&quot;, 书表.查询(&quot;作者 = ?&quot;, [&quot;刘慈欣&quot;]))
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E7%A4%BA%E4%BE%8B/%E7%89%B9%E6%80%A7/%E6%95%B0%E6%8D%AE%E5%BA%93.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>网络</h3>
+  <p>网络对象：取网页 / 发请求</p>
+<pre><code># 网络对象：取网页 / 发请求
+# 这里用 file:// 读本地文件演示（不用联网也能跑）；真用时换成 https 地址即可。
+
+导入 路径
+
+本目录 = 路径.取目录(路径.绝对路径(__file__))
+文件 = 路径.拼接(本目录, &quot;配置.json&quot;).替换(&quot;\\&quot;, &quot;/&quot;)
+响应 = 取网页(&quot;file:///&quot; + 文件)
+
+输出（&quot;状态码：&quot;, 响应.状态码, &quot; 正常：&quot;, 响应.正常)
+输出（&quot;内容长度：&quot;, 求长度(响应.内容))
+输出（&quot;文本前 20：&quot;, 响应.文本[:20])
+
+配置 = 响应.JSON
+输出（&quot;站点名：&quot;, 配置.站点名, &quot; 端口：&quot;, 配置.端口)
+
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E7%A4%BA%E4%BE%8B/%E7%89%B9%E6%80%A7/%E7%BD%91%E7%BB%9C.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>读取文档</h3>
+  <p>读取文档：`文档` 是 `文件` 的子类</p>
+<pre><code># 读取文档：`文档` 是 `文件` 的子类
+# 运行：python 桥.py 运行 示例/特性/读取文档.bridge
+
+文档 = 读取(&quot;./a.txt&quot;)
+
+输出（&quot;文件名：&quot;, 文档.文件名, &quot; 后缀：&quot;, 文档.后缀）
+输出（&quot;第一个字符：&quot;, 文档[0]）
+输出（&quot;内容：&quot;, 文档）
+输出（&quot;大小（字节）：&quot;, 文档.大小）
+输出（&quot;它是不是文件：&quot;, 是实例(文档, 文件)）
+
+# 改名（方法形式；写 `文档.文件名 = &quot;b.txt&quot;` 效果一样）
+文档.改名(&quot;b.txt&quot;)
+输出（&quot;改名后：&quot;, 文档.文件名）
+
+# 改内容 = 回写文件；追加是便捷写法
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E7%A4%BA%E4%BE%8B/%E7%89%B9%E6%80%A7/%E8%AF%BB%E5%8F%96%E6%96%87%E6%A1%A3.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>跳转</h3>
+  <p>跳转：`标记` + `跳转到`（桥语言独有的 goto）</p>
+<pre><code># 跳转：`标记` + `跳转到`（桥语言独有的 goto）
+# 运行：python 桥.py 运行 示例/特性/跳转.bridge
+
+输出（&quot;== 用跳转做循环 ==&quot;）
+计数 = 0
+标记 回头
+输出（&quot;第&quot;, 计数, &quot;次&quot;)
+计数 += 1
+如果 计数 小于 3:
+    跳转到 回头
+
+输出（&quot;== 用跳转往前跳（跳过一段代码）==&quot;）
+输出（&quot;A&quot;)
+跳转到 终点
+输出（&quot;这一行永远不会执行&quot;)
+标记 终点
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E7%A4%BA%E4%BE%8B/%E7%89%B9%E6%80%A7/%E8%B7%B3%E8%BD%AC.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>运行与并行</h3>
+  <p>运行 / 并行：bridge 文件之间互相调用</p>
+<pre><code># 运行 / 并行：bridge 文件之间互相调用
+# 运行：python 桥.py 运行 示例/特性/运行与并行.bridge
+
+输出（&quot;== 运行：等它跑完，并拿到返回值 ==&quot;）
+运行(&quot;子程序.bridge&quot;)
+甲 = 运行(&quot;./子程序.bridge&quot;)
+输出（&quot;子程序返回：&quot;, 甲）
+
+输出（&quot;== 并行：开个线程跑，不等它 ==&quot;）
+句柄 = 并行(&quot;子程序.bridge&quot;)
+输出（&quot;主程序先走一步&quot;)
+
+输出（&quot;== 等待完成：等并行任务收尾 ==&quot;）
+等待完成(句柄)
+输出（&quot;并行结束&quot;)</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E7%A4%BA%E4%BE%8B/%E7%89%B9%E6%80%A7/%E8%BF%90%E8%A1%8C%E4%B8%8E%E5%B9%B6%E8%A1%8C.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>三数之和</h3>
+  <p>三数之和：排序 + 双指针，O(n^2)</p>
+<pre><code># 三数之和：排序 + 双指针，O(n^2)
+# 用法一：python 桥.py 运行 示例/三数之和.bridge &lt; 输入.txt
+# 用法二：直接跑（不给输入时用题目样例，方便看效果）
+
+导入 运行环境
+
+
+定义 求解(数组):
+    &quot;&quot;&quot;返回所有和为 0 的不重复三元组（三元组内部升序、整体字典序）&quot;&quot;&quot;
+    数组.排序()
+    n = 求长度(数组)
+    结果 = []
+    对于 i 在 范围(n - 2):
+        如果 i 大于 0 且 数组[i] == 数组[i - 1]:
+            继续                                   # 第一个数去重
+        j = i + 1
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E7%A4%BA%E4%BE%8B/%E4%B8%89%E6%95%B0%E4%B9%8B%E5%92%8C.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>标准库</h3>
+  <p>标准库演示：时间 / 路径 / 系统 / json</p>
+<pre><code># 标准库演示：时间 / 路径 / 系统 / json
+# 运行：python 桥.py 运行 示例/标准库.bridge
+
+导入 时间
+导入 路径
+导入 系统
+导入 json
+导入 运行环境
+
+# ---- 时间 ----
+时间.睡眠(0)
+现在 = 时间.当前时间戳()
+输出（&quot;时间戳是正数：&quot;, 现在 大于 0）
+输出（&quot;类型对得上：&quot;, 类型(现在) 等于 浮点）
+
+# ---- 路径 ----
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E7%A4%BA%E4%BE%8B/%E6%A0%87%E5%87%86%E5%BA%93.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>混写演示</h3>
+  <p>混写演示：原生 Python、中文关键字、中文别名，同一个文件里共存</p>
+<pre><code># 混写演示：原生 Python、中文关键字、中文别名，同一个文件里共存
+# 运行：python 桥.py 运行 示例/混写演示.bridge
+
+import math
+
+数据 = [3, 1, 4]
+数据.追加(1)
+数据.排序()
+输出(&quot;排序后：&quot;, 数据)
+输出(&quot;长度：&quot;, 求长度(数据), &quot;最大：&quot;, 求最大值(数据))
+输出(&quot;开方：&quot;, 数学.开方(16), &quot;原生写法：&quot;, math.sqrt(16))
+
+def 英文函数(x):
+    return x * 2
+
+定义 中文函数(x):
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E7%A4%BA%E4%BE%8B/%E6%B7%B7%E5%86%99%E6%BC%94%E7%A4%BA.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>示例1</h3>
+  <p>示例1：定义、全角标点、中英混写</p>
+<pre><code># 示例1：定义、全角标点、中英混写
+
+定义 两个数之和(a, b):
+    c = a + b
+    返回 c
+
+输出(&quot;你好，世界！&quot;)
+
+# 全角半角标点符都是可以的
+对于 i 在 范围（1，5，2）：
+    输出（两个数之和（i，i + 1））</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E7%A4%BA%E4%BE%8B/%E7%A4%BA%E4%BE%8B1.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>自然化</h3>
+  <p>自然化演示：句式糖 + 关系词 + 助词，读起来接近中文</p>
+<pre><code># 自然化演示：句式糖 + 关系词 + 助词，读起来接近中文
+# 运行：python 桥.py 运行 示例/自然化.bridge
+
+成绩 = 【92，58，77，100】
+
+# 定义函数 + 对于每个
+定义函数 评语(分数):
+    如果 分数 至少 90 那么:
+        返回 “优秀”
+    否则如果 分数 不小于 60 那么:
+        返回 “及格”
+    否则的话:
+        返回 “不及格”
+
+# 遍历 + 输出
+遍历 成绩 中的 每个 分数:
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E7%A4%BA%E4%BE%8B/%E8%87%AA%E7%84%B6%E5%8C%96.bridge">在 GitHub 看全文 →</a></p>
+</div>
+    </div>
+  </section>
+</main>
+<footer>桥语言 Bridge Language · MIT · 用中文写 Python</footer>
+</body>
+</html>

@@ -28,10 +28,10 @@ sys.path.insert(0, str(项目根))
 
 from 转译器 import (  # noqa: E402
     转译, 编译, 运行, 方言错误, 载入规则, 规则清单, 安装导入钩子,
-    运行失败, 缓存信息, 清理缓存, 版本,
+    运行失败, 缓存信息, 清理缓存,
 )
 
-用法 = f"""桥语言 {版本} · Python 的中文方言
+用法 = """桥语言 0.1 · Python 的中文方言
 
 用法：
   python 桥.py 运行  <文件.bridge> [-参数...]   转译并执行
@@ -42,10 +42,9 @@ from 转译器 import (  # noqa: E402
   python 桥.py 查    <中文词|英文名>            查一个词怎么映射，还有哪些同义写法
   python 桥.py 缓存  [清理]                    查看/清理 .bridgec 编译缓存
   python 桥.py 调试  <文件.bridge> [--断点 3,7:条件] 断点调试（n/o/c/p/e/l/q）
-  python 桥.py repl  [一行代码]               交互式试写（不建文件）
+  python 桥.py repl  [一行代码]               交互式试写（不建文件）\n  python 桥.py mcp                            MCP 服务（给 AI 工具调）
   python 桥.py init  [目录] [-f]               生成一个能跑的起步工程
   python 桥.py 体检                            规则表体检（重叠/非法映射/漏占位）
-  python 桥.py 帮助  [词]                      问一个词怎么用；不写词看目录（= .bridge 里写 `词?`）
 """
 
 
@@ -102,9 +101,7 @@ def 命令_编译(参数: list[str]) -> int:
     输出.parent.mkdir(parents=True, exist_ok=True)  # 输出目录不存在就建，别为个路径报错
     # 跳转/运行/并行/读取文档这些是"运行时名字"：编译成纯 .py 时得自带
     运行时名 = ('桥跳转', '桥返回', '桥运行', '桥并行', '桥读取', '桥新建', '桥删除',
-              '桥等待', '文件', '文档', '结构化', 'JSON节点', '表格',
-              '桥排队', '桥切片', '桥最后一个', '桥前几个', '桥倒过来',
-              '桥读二进制', '桥打开压缩包', '桥帮助', '二进制文件', '压缩包')
+              '桥等待', '文件', '文档', '结构化', 'JSON节点', '表格')
     if any(名 in 转译结果 for 名 in 运行时名):
         根 = 项目根.as_posix()
         if 自包含:
@@ -340,6 +337,10 @@ def 命令_调试(参数: list[str]) -> int:
     """python 桥.py 调试 <文件> [--断点 3,7] [-- 传给程序的参数]"""
     from 转译器.调试 import 调试运行
 
+    协议 = '--协议' in 参数
+    if 协议:
+        参数 = [a for a in 参数 if a != '--协议']
+
     断点: dict[int, str | None] = {}
     剩余: list[str] = []
     i = 0
@@ -362,11 +363,21 @@ def 命令_调试(参数: list[str]) -> int:
         剩余.append(参数[i])
         i += 1
     路径 = 找文件(剩余)
+    if 协议:
+        from 转译器.协议调试 import 协议调试
+
+        return 协议调试(路径, set(断点), 传入)
     if not 断点:
         print('提示：没给断点，进去就会停在第一行（--断点 3,7 或 3:条件）',
               file=sys.stderr)
         return 调试运行(路径, {1: None}, 传入)
     return 调试运行(路径, 断点, 传入)
+
+
+def 命令_mcp(参数: list[str]) -> int:
+    from 转译器.MCP import main as mcp_main
+
+    return mcp_main(参数)
 
 
 def 命令_repl(参数: list[str]) -> int:
@@ -395,19 +406,9 @@ def 命令_init(参数: list[str]) -> int:
     return 0
 
 
-def 命令_帮助(参数: list[str]) -> int:
-    """`python 桥.py 帮助 如果` —— 和 .bridge 里写 `如果?` 是同一条链路"""
-    from 转译器.运行时 import 桥帮助
-
-    桥帮助(参数[0] if 参数 else '')
-    return 0
-
-
 命令表 = {
     '运行': 命令_运行,
-    '帮助': 命令_帮助,
-    '?': 命令_帮助,
-    'help': 命令_帮助,    '查看': 命令_查看,
+    '查看': 命令_查看,
     '编译': 命令_编译,
     '检查': 命令_检查,
     '规则': 命令_规则,
@@ -418,6 +419,7 @@ def 命令_帮助(参数: list[str]) -> int:
     'ai': 命令_AI,
     '提示词': 命令_AI,
     '调试': 命令_调试,
+    'mcp': 命令_mcp,
     'repl': 命令_repl,
     'init': 命令_init,
 }
@@ -428,7 +430,7 @@ def main(参数: list[str]) -> int:
         print(用法)
         return 0
     命令 = 参数[0]
-    if 命令 in ('-h', '--help'):
+    if 命令 in ('-h', '--help', '帮助'):
         print(用法)
         return 0
     处理器 = 命令表.get(命令)

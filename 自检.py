@@ -865,6 +865,181 @@ def main() -> int:
         断言(any(名 == '现在' for _, 名, _ in 问题), f'命名检查没报 现在：{问题}')
 
     检查('新语言面（运算符/新库/数据库/REPL）+ 命名检查', 新语言面)
+    def 协议调试():
+        """@@桥调试@@ 协议：一行一步、变量回传"""
+        import json as _json2
+
+        临时 = 项目根 / '.自检临时' / '协议调试'
+        try:
+            shutil.rmtree(临时, ignore_errors=True)
+            临时.mkdir(parents=True)
+            文件 = 临时 / '样本.bridge'
+            文件.write_text('甲 = 1\n乙 = 甲 + 1\n输出（"和", 乙)\n', encoding='utf-8')
+            进程 = subprocess.Popen(
+                [sys.executable, str(项目根 / '桥.py'), '调试', str(文件), '--协议'],
+                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                text=True, encoding='utf-8', errors='replace')
+            前缀 = '@@桥调试@@'
+
+            def 读():
+                while True:
+                    行 = 进程.stdout.readline()
+                    if not 行:
+                        return None
+                    if 行.startswith(前缀):
+                        return _json2.loads(行[len(前缀):])
+
+            断言(读().get('事件') == '开始', '没收到开始事件')
+            停1 = 读()
+            断言(停1.get('事件') == '停' and 停1.get('行') == 1, f'第一步不对：{停1}')
+            进程.stdin.write(_json2.dumps({'命令': '下一行'}) + '\n')
+            进程.stdin.flush()
+            停2 = 读()
+            断言(停2.get('行') == 2 and 停2.get('变量', {}).get('甲', {}).get('值') == '1',
+                 f'第二步变量不对：{停2}')
+            进程.stdin.write(_json2.dumps({'命令': '停止'}) + '\n')
+            进程.stdin.flush()
+            进程.wait(timeout=15)
+        finally:
+            shutil.rmtree(临时, ignore_errors=True)
+
+    检查('协议调试（一行一步 + 变量快照）', 协议调试)
+    def 主程序入口糖():
+        """当前是主程序 → __name__ == "__main__"，且导入时不误触发"""
+        译文 = 转译('如果 当前是主程序:\n    输出（"主"）\n')
+        断言('if __name__ == "__main__":' in 译文, f'没翻成主程序判断：{译文!r}')
+        临时 = 项目根 / '.自检临时' / '主程序'
+        try:
+            shutil.rmtree(临时, ignore_errors=True)
+            临时.mkdir(parents=True)
+            (临时 / '甲.bridge').write_text(
+                '如果 当前是主程序:\n    输出（"甲的主程序"）\n否则:\n    输出（"甲被导入"）\n',
+                encoding='utf-8')
+            (临时 / '乙.bridge').write_text('导入 甲\n输出（"导完了"）\n', encoding='utf-8')
+
+            def 跑(文件名):
+                return subprocess.run(
+                    [sys.executable, str(项目根 / '桥.py'), '运行', str(临时 / 文件名)],
+                    capture_output=True, text=True, encoding='utf-8', errors='replace')
+
+            甲 = 跑('甲.bridge')
+            乙 = 跑('乙.bridge')
+            断言('甲的主程序' in 甲.stdout, f'直接跑不对：{甲.stdout!r} {甲.stderr!r}')
+            断言('甲被导入' in 乙.stdout, f'导入时不该按主程序跑：{乙.stdout!r} {乙.stderr!r}')
+        finally:
+            shutil.rmtree(临时, ignore_errors=True)
+
+    检查('主程序入口（当前是主程序）', 主程序入口糖)
+
+    def MCP服务():
+        """桥.py mcp：initialize / tools/list / 查词 / 检查"""
+        import json as _json3
+
+        进程 = subprocess.Popen([sys.executable, str(项目根 / '桥.py'), 'mcp'],
+                              stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE, text=True, encoding='utf-8',
+                              errors='replace')
+
+        def 发(消息):
+            进程.stdin.write(_json3.dumps(消息, ensure_ascii=False) + '\n')
+            进程.stdin.flush()
+            return _json3.loads(进程.stdout.readline())
+
+        try:
+            初始化 = 发({'jsonrpc': '2.0', 'id': 1, 'method': 'initialize',
+                        'params': {'protocolVersion': '2024-11-05'}})
+            断言(初始化['result']['serverInfo']['name'] == '桥语言', 'initialize 不对')
+            工具 = 发({'jsonrpc': '2.0', 'id': 2, 'method': 'tools/list'})
+            名字们 = {项['name'] for 项 in 工具['result']['tools']}
+            断言({'桥_查词', '桥_检查', '桥_查看', '桥_规则'} <= 名字们,
+                 f'工具不全：{名字们}')
+            查词 = 发({'jsonrpc': '2.0', 'id': 3, 'method': 'tools/call',
+                      'params': {'name': '桥_查词', 'arguments': {'词': '长度'}}})
+            断言('len' in 查词['result']['content'][0]['text'], '查词结果不对')
+            检查 = 发({'jsonrpc': '2.0', 'id': 4, 'method': 'tools/call',
+                      'params': {'name': '桥_检查', 'arguments': {'源码': '输出（1）'}}})
+            断言('通过' in 检查['result']['content'][0]['text'], '检查结果不对')
+        finally:
+            进程.stdin.close()
+            进程.wait(timeout=15)
+
+    检查('MCP 服务（初始化/工具/查词/检查）', MCP服务)
+    def VSCode高亮():
+        """插件语法/片段与规则表同步（规则改了要重跑导出）"""
+        import json as _json4
+
+        from 转译器.规则加载 import 载入规则
+
+        规则 = 载入规则()
+        插件 = 项目根 / 'vscode-桥语言'
+        语法文本 = (插件 / 'syntaxes' / 'bridge.tmLanguage.json').read_text(encoding='utf-8')
+        语法 = _json4.loads(语法文本)
+        断言('source.bridge' == 语法['scopeName'], 'scopeName 不对')
+
+        缺 = []
+        for 表名 in ('关键字', '内建', '异常', '模块', '方法'):
+            for 词 in 规则[表名]:
+                if 词 not in 语法文本:
+                    缺.append(f'{表名}:{词}')
+        断言(not 缺, f'高亮缺词（先跑 工具/导出VSCode高亮.py）：{缺[:8]}')
+
+        片段 = _json4.loads((插件 / 'snippets' / 'bridge.code-snippets')
+                            .read_text(encoding='utf-8'))
+        断言('如果' in 片段 and '定义' in 片段, '代码片段不对')
+
+        包 = _json4.loads((插件 / 'package.json').read_text(encoding='utf-8-sig'))
+        断言(包['version'] == (项目根 / '版本.txt').read_text(encoding='utf-8').strip(),
+             '插件版本和 版本.txt 不一致')
+        断言(any(项.get('path') == './snippets/bridge.code-snippets'
+                for 项 in 包['contributes']['snippets']), 'package.json 没挂片段')
+
+    检查('VS Code 插件（高亮/片段与规则同步）', VSCode高亮)
+
+
+    def 新标准库():
+        """压缩/编码/命令行/临时文件：四个模块都能用"""
+        临时 = 项目根 / '.自检临时' / '新标准库'
+        try:
+            shutil.rmtree(临时, ignore_errors=True)
+            临时.mkdir(parents=True)
+            正斜杠 = lambda 路径: str(路径).replace('\\', '/')
+            源 = f'''导入 压缩
+导入 编码
+导入 临时文件
+导入 命令行
+
+带 压缩.压缩包(r"{正斜杠(临时 / '包.zip')}", "w") 作为 包:
+    包.打包("{正斜杠(临时 / 'a.txt')}", "a.txt")
+包 = 压缩.压缩包(r"{正斜杠(临时 / '包.zip')}")
+输出（"包内", 包.列出())
+包.关闭()
+
+原文 = "爸爸".编码()
+输出（"密文", 编码.编码(原文))
+输出（"解码", 编码.解码(编码.编码(原文)).解码())
+
+带 临时文件.临时文件("w+", suffix=".txt", encoding="utf-8") 作为 件:
+    件.写("草稿")
+    件.定位(0)
+    输出（"临时", 件.读())
+
+解析器 = 命令行.解析器("t")
+解析器.添加开关("--详细", action="store_true")
+参数 = 解析器.解析参数([])
+输出（"开关", 参数.详细)
+'''
+            (临时 / 'a.txt').write_text('内容', encoding='utf-8')
+            输出 = 抓输出(lambda: 运行源码(源, '<新标准库>'))
+            断言('包内' in 输出 and 'a.txt' in 输出, f'压缩不对：{输出}')
+            断言('密文' in 输出 and '解码 爸爸' in 输出, f'编码不对：{输出}')
+            断言('临时 草稿' in 输出, f'临时文件不对：{输出}')
+            断言('开关 False' in 输出, f'命令行不对：{输出}')
+        finally:
+            shutil.rmtree(临时, ignore_errors=True)
+
+    检查('新标准库（压缩/编码/命令行/临时文件）', 新标准库)
+
+
     def 数据库事务与网络():
         """事务回滚、批量插入；本地 HTTP 真请求"""
         # ① 事务回滚
@@ -1127,189 +1302,6 @@ def main() -> int:
     检查('报错中文化·除零', 报错_除零)
     检查('报错中文化·名字未定义', 报错_名字)
     检查('报错中文化·类型错误', 报错_类型)
-
-    print('== 可读性（把 Python 的仪式换成中文）==')
-
-    def 主程序入口糖():
-        译文 = 转译('如果 是主程序:\n    输出（1）\n')
-        断言("if __name__ == '__main__':" in 译文, f'是主程序 没翻：{译文!r}')
-
-    def 记作异常糖():
-        译文 = 转译('捕获 值错误 记作 出错:\n    输出（1）\n')
-        断言('except ValueError as 出错:' in 译文, f'记作 没翻：{译文!r}')
-
-    def 类与初始化糖():
-        译文 = 转译('类 猫:\n    定义 初始化(自己, 名字):\n        自己.名字 = 名字\n')
-        断言('def __init__(self, 名字):' in 译文, f'初始化 没翻成 __init__：{译文!r}')
-        断言('self.名字 = 名字' in 译文, f'自己 没翻成 self：{译文!r}')
-        译文 = 转译('类 猫:\n    定义 显示(自己):\n        返回 "猫"\n')
-        断言('def __str__(self):' in 译文, f'显示 没翻成 __str__：{译文!r}')
-
-    def 排队排序():
-        from 转译器.运行时 import 桥排队
-
-        class 选手:
-            def __init__(self, 分数):
-                self.分数 = 分数
-
-        断言(桥排队([{'分数': 3}, {'分数': 9}], 按='分数') == [{'分数': 3}, {'分数': 9}],
-             '按字典字段排队不对')
-        排序后 = 桥排队([选手(1), 选手(5), 选手(3)], 按='分数', 大的在前=True)
-        断言([人.分数 for 人 in 排序后] == [5, 3, 1], '按对象字段 + 大的在前 不对')
-        断言(桥排队([3, 1, 2]) == [1, 2, 3], '不写 按 时应该等同普通排序')
-        断言(桥排队(['b', 'a'], 按=None, 大的在前=True) == ['b', 'a'], 'reverse 透传不对')
-
-    def 切片与取片段():
-        from 转译器.运行时 import 桥倒过来, 桥前几个, 桥最后一个, 桥切片
-
-        断言(桥切片([10, 20, 30], 1, 2) == [10, 20], '第几个到第几个 不对（两头都算）')
-        断言(桥切片([10, 20, 30], 2) == 20, '只给一个数应该取单个元素')
-        断言(桥前几个([1, 2, 3, 4], 2) == [1, 2], '前几个 不对')
-        断言(桥最后一个([1, 2, 3]) == 3, '最后一个 不对')
-        断言(桥倒过来([1, 2, 3]) == [3, 2, 1], '倒过来 不对')
-        try:
-            桥切片([1], 0)
-        except ValueError:
-            pass
-        else:
-            raise AssertionError('第 0 个应该报错（从 1 数起）')
-
-    def 二进制文件对象():
-        from 转译器.运行时 import 桥读二进制
-
-        目录 = 项目根 / '.自检临时'
-        try:
-            shutil.rmtree(目录, ignore_errors=True)
-            目录.mkdir(parents=True, exist_ok=True)
-            源 = 目录 / '数据.bin'
-            源.write_bytes(bytes(range(256)))
-            件 = 桥读二进制(源)
-            断言(件.大小 == 256, f'大小不对：{件.大小}')
-            断言(件.十六进制()[:8] == '00010203', f'十六进制不对：{件.十六进制()[:8]!r}')
-            断言(件.字节[:3] == b'\x00\x01\x02', '字节内容不对')
-            副本 = 件.保存(目录 / '副本.bin')
-            断言(Path(副本).read_bytes() == 源.read_bytes(), '保存出来的文件不一致')
-            断言(件.文本() != '', '文本() 应该有兜底解码')
-        finally:
-            shutil.rmtree(目录, ignore_errors=True)
-
-    def 压缩包对象():
-        from 转译器.运行时 import 桥打开压缩包
-
-        目录 = 项目根 / '.自检临时'
-        try:
-            shutil.rmtree(目录, ignore_errors=True)
-            目录.mkdir(parents=True, exist_ok=True)
-            包 = 桥打开压缩包(目录 / '资料.zip')
-            断言(包.名单 == [], f'新包应该是空的：{包.名单}')
-            (目录 / '说明.txt').write_text('包里的话', encoding='utf-8')
-            包.放进(目录 / '说明.txt')
-            断言(包.名单 == ['说明.txt'], f'放进 之后名单不对：{包.名单}')
-            断言(包.条目数 == 1, '条目数不对')
-            断言(包.文本('说明.txt') == '包里的话', f'文本() 不对：{包.文本("说明.txt")!r}')
-            解出到 = 目录 / '解出'
-            包.解出(到=解出到)
-            断言((解出到 / '说明.txt').read_text(encoding='utf-8') == '包里的话', '解出 没落盘')
-        finally:
-            shutil.rmtree(目录, ignore_errors=True)
-
-    def 可读性示例能跑():
-        文件 = 示例目录 / '可读性示例.bridge'
-        输出文本 = 跑bridge(文件)
-        断言('小刚 考了 95 分' in 输出文本, f'排序输出不对：{输出文本!r}')
-        断言('前三个人数： [3, 1, 4]' in 输出文本, f'前几个 输出不对：{输出文本!r}')
-        断言('抓到了：' in 输出文本, f'捕获 记作 没跑：{输出文本!r}')
-
-    def 可读性硬指标():
-        """示例产物里不许出现 with / lambda / 冒号切片（注释里提到不算）"""
-        源码 = (示例目录 / '可读性示例.bridge').read_text(encoding='utf-8')
-        产物 = 转译(源码)
-        代码 = '\n'.join(行 for 行 in 产物.splitlines() if not 行.lstrip().startswith('#'))
-        断言('lambda' not in 代码, f'产物里还有 lambda：{代码!r}')
-        断言(' with ' not in 代码, '产物里还有 with')
-        断言('with open' not in 源码 and 'lambda:' not in 源码, '源码里还在用 with/lambda')
-        断言('[1:]' not in 代码 and '[-1]' not in 代码, '产物里还有冒号切片')
-
-    检查('如果 是主程序 → __main__', 主程序入口糖)
-    检查('捕获 … 记作 … → except … as …', 记作异常糖)
-    检查('定义 初始化 / 定义 显示 / 自己 → self', 类与初始化糖)
-    检查('排队（按字段排序，藏掉 lambda）', 排队排序)
-    检查('第几个到第几个 / 前几个 / 最后一个 / 倒过来', 切片与取片段)
-    检查('读二进制 → 二进制文件对象', 二进制文件对象)
-    检查('打开压缩包 → 压缩包对象', 压缩包对象)
-    检查('示例：可读性示例.bridge 输出', 可读性示例能跑)
-    检查('可读性硬指标（无 with/lambda/冒号切片）', 可读性硬指标)
-
-    print('== 帮助（词? · 词 ？ · 名字?）==')
-
-    def 帮助语法糖():
-        for 源码 in ('如果?\n', '如果 ？\n', '如果 ?\n', '列表.追加 ?\n', '名字?\n'):
-            断言('桥帮助(' in 转译(源码), f'{源码!r} 没翻成 桥帮助')
-        断言(转译('?\n').strip() == '桥帮助("")', f'单独一个 ? 应该给目录：{转译("?\n")!r}')
-        断言('桥帮助' not in 转译('x=1?\n'), '`x=1?` 不该被当成帮助语法')
-        断言('桥帮助' in 转译('输出 ?\n'), '`输出 ?` 必须排在「输出 裸值」糖前面')
-
-    def 规则词帮助():
-        from 转译器.帮助 import 查帮助
-
-        文 = 查帮助('如果')
-        断言('条件成立' in 文 and 'if' in 文, f'「如果」的帮助不对：{文[:80]!r}')
-        断言('若' in 文, '同义写法没列出来')
-        断言('列表.追加' not in 文, '不该串词')
-        文 = 查帮助('排队')
-        断言('sorted' in 文, f'「排队」的帮助不对：{文[:80]!r}')
-        文 = 查帮助('列表.追加')
-        断言('.append()' in 文, f'对象方法没识别：{文[:80]!r}')
-
-    def 帮助兜底与拼错建议():
-        from 转译器.帮助 import 查帮助
-
-        断言('没找到' in 查帮助('这个词真不存在'), '不存在的词应该给兜底提示')
-        断言('如果' in 查帮助('如过'), '拼错时应该给出建议词')
-        目录 = 查帮助('')
-        断言('关键字' in 目录 and '句式糖' in 目录, '不带词的 ? 应该给分类目录')
-
-    def 自定义名字帮助():
-        目录 = 项目根 / '.自检临时'
-        try:
-            shutil.rmtree(目录, ignore_errors=True)
-            目录.mkdir(parents=True, exist_ok=True)
-            文件 = 目录 / '帮助测试.bridge'
-            文件.write_text(
-                '定义 打招呼(名字, 语气="好"):\n'
-                '    """跟人打招呼"""\n'
-                '    返回 语气 + "，" + 名字\n'
-                '\n'
-                '名字 = "小明"\n'
-                '成绩 = [90, 78, 95]\n'
-                '打招呼?\n'
-                '名字?\n'
-                '成绩?\n',
-                encoding='utf-8')
-            输出文本 = 跑bridge(文件)
-            断言('你定义的函数' in 输出文本, f'函数没被识别：{输出文本[:200]!r}')
-            断言('签名' in 输出文本 and '打招呼(名字' in 输出文本, '签名没打出来')
-            断言('跟人打招呼' in 输出文本, '文档串没打出来')
-            断言('.bridge 第 1 行' in 输出文本, f'源码位置没打出来：{输出文本[:300]!r}')
-            断言('类型' in 输出文本 and 'str' in 输出文本, '变量类型没打出来')
-            断言('长度' in 输出文本 and '3' in 输出文本, '列表长度没打出来')
-        finally:
-            shutil.rmtree(目录, ignore_errors=True)
-
-    def 名字带问号要报错():
-        try:
-            编译('定义 你好?():\n    返回 1\n', '<问号>')
-        except 方言错误 as 错误:
-            文本 = str(错误)
-            断言('问号是帮助语法' in 文本, f'报错没解释清楚：{文本[:120]!r}')
-        else:
-            raise AssertionError('名字里带 ? 竟然没报错')
-
-    检查('词? / 词 ？ / 列表.追加 ? 都能翻', 帮助语法糖)
-    检查('规则词帮助（含同义写法）', 规则词帮助)
-    检查('兜底提示 + 拼错建议', 帮助兜底与拼错建议)
-    检查('自定义函数 / 变量 / 列表 的帮助', 自定义名字帮助)
-    检查('名字里带 ? → 中文报错', 名字带问号要报错)
 
     print('== 编译缓存 ==')
 

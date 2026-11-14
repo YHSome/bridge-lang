@@ -105,6 +105,17 @@
     '入队不等': 'put_nowait',
     '任务完成': 'task_done',
     '等待完成队列': 'join',
+    '打包': 'write',
+    '解压': 'extractall',
+    '解压到': 'extractall',
+    '列出': 'namelist',
+    '添加参数': 'add_argument',
+    '添加开关': 'add_argument',
+    '添加子命令': 'add_subparsers',
+    '解析参数': 'parse_args',
+    '已知参数': 'parse_known_args',
+    '定位': 'seek',
+    '当前位置': 'tell',
     '组': 'group',
     '分组': 'group',
     '组们': 'groups',
@@ -116,7 +127,4 @@
     '全部查找': 'findall',
     '刷新': 'flush',
     '缓冲': 'buffer',
-    # ---------- 可读性：对象初始化 ----------
-    # `定义 初始化(自己, …)` 由语法糖翻成 def __init__；这里是给 `父类.初始化()` 用的
-    '初始化': '__init__',
 }

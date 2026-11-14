@@ -37,7 +37,7 @@ jobs:
           临时 = Path('.验收').resolve()
           shutil.rmtree(临时, ignore_errors=True)
           临时.mkdir()
-          with zipfile.ZipFile('发布/桥-0.3.0.zip') as 包:
+          with zipfile.ZipFile('发布/桥-0.2.0.zip') as 包:
               包.extractall(临时)
 
           检查 = []
@@ -68,5 +68,5 @@ jobs:
         with:
           name: 桥-便携包
           path: |
-            发布/桥-0.3.0.zip
+            发布/桥-0.2.0.zip
             发布/桥/校验.txt

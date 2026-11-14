@@ -44,7 +44,13 @@ from pathlib import Path
 
 包含目录 = [
     '转译器',
-    '示例',
+]
+
+# 精简包只放 3 个"给 AI 看写法"的示例；其余示例在文档页/GitHub 上看
+示例文件 = [
+    '示例/示例1.bridge',
+    '示例/混写演示.bridge',
+    '示例/标准库.bridge',
 ]
 
 # --完整：把教程、工具、自检、对照用例、文档也带上（开发和教学用）
@@ -55,6 +61,8 @@ from pathlib import Path
     '交付说明.md',
 ]
 完整目录 = [
+    'vscode-桥语言',
+    '示例',
     '工具',
     '金标准',
     '教程',
@@ -81,7 +89,7 @@ def _要包含(路径: Path) -> bool:
 def 收集(完整: bool = False) -> list[tuple[Path, str]]:
     """返回 [(磁盘路径, 包内相对路径)]"""
     结果: list[tuple[Path, str]] = []
-    for 名 in 包含文件 + (完整文件 if 完整 else []):
+    for 名 in 包含文件 + 示例文件 + (完整文件 if 完整 else []):
         文件 = 项目根 / 名
         if 文件.is_file():
             结果.append((文件, 名))
@@ -135,6 +143,14 @@ def 生成校验(包目录: Path, 版本: str) -> Path:
 
 def 打包(版本: str, 只留目录: bool, 完整: bool = False) -> int:
     文件们 = 收集(完整)
+    看过的: set[str] = set()
+    去重们 = []
+    for 对 in 文件们:
+        if 对[1] in 看过的:
+            continue
+        看过的.add(对[1])
+        去重们.append(对)
+    文件们 = 去重们
     包目录 = 发布目录 / '桥'
     发布目录.mkdir(parents=True, exist_ok=True)
 
@@ -177,7 +193,7 @@ def 打包(版本: str, 只留目录: bool, 完整: bool = False) -> int:
 
 
 def main(参数: list[str]) -> int:
-    版本 = '0.3.0'
+    版本 = '0.2.0'
     for i, 段 in enumerate(参数):
         if 段 in ('--版本', '-v') and i + 1 < len(参数):
             版本 = 参数[i + 1]
