@@ -69,6 +69,19 @@ def _工具表() -> list[dict]:
             'description': '列出当前关键字/内建/方法/模块数量与前几个词',
             'inputSchema': {'type': 'object', 'properties': {}},
         },
+        {
+            'name': '桥_帮助',
+            'description': '问一个词怎么用（等价于代码里写 `词?`）：作用 / 语法 / 同义写法 / 例子；'
+                           '传「详细」还能拿到相关词',
+            'inputSchema': {
+                'type': 'object',
+                'properties': {
+                    '词': {'type': 'string'},
+                    '详细': {'type': 'boolean'},
+                },
+                'required': ['词'],
+            },
+        },
     ]
 
 
@@ -125,6 +138,13 @@ def _查看(参数: dict) -> str:
     return 转译(_取源码(参数), 规则=None)
 
 
+def _帮助(参数: dict) -> str:
+    """`桥_帮助`：和 .bridge 里写 `词?` 走同一条链路（查帮助）"""
+    from .帮助 import 查帮助
+
+    return 查帮助(str(参数.get('词') or ''), 详细=bool(参数.get('详细')))
+
+
 def _规则() -> str:
     from .规则加载 import 载入规则
 
@@ -145,6 +165,8 @@ def _调用工具(名: str, 参数: dict) -> tuple[str, bool]:
             return _查看(参数), False
         if 名 == '桥_规则':
             return _规则(), False
+        if 名 == '桥_帮助':
+            return _帮助(参数), False
         return f'没有这个工具：{名}', True
     except Exception as 错误:      # noqa: BLE001
         traceback.print_exc(file=sys.stderr)

@@ -1554,29 +1554,32 @@ def main() -> int:
     检查('MCP 服务（初始化/工具/查词/检查）', MCP服务)
 
     def VSCode高亮():
-        """插件语法/片段与规则表同步（规则改了要重跑导出）"""
+        """插件语法/片段/语言配置 = 规则表的另一份视图（由 工具/导出VSCode高亮.py 生成）
+
+        以前这里只检查"词在不在文件里"，所以「句式糖高亮其实是死代码」这种问题查不出来；
+        现在直接调用生成器做**逐字节比对**，规则改了没重新生成就会红。
+        """
         import json as _json4
+        import sys as _sys
 
-        from 转译器.规则加载 import 载入规则
+        _sys.path.insert(0, str(项目根 / '工具'))
+        import 导出VSCode高亮 as 插件生成  # noqa: PLC0415
 
-        规则 = 载入规则()
-        插件 = 项目根 / 'vscode-桥语言'
-        语法文本 = (插件 / 'syntaxes' / 'bridge.tmLanguage.json').read_text(encoding='utf-8')
-        语法 = _json4.loads(语法文本)
-        断言('source.bridge' == 语法['scopeName'], 'scopeName 不对')
+        同步, 问题 = 插件生成.检查()
+        断言(同步, '插件与规则不同步（跑 python 工具/导出VSCode高亮.py）：'
+                  + '；'.join(问题[:3] or ['语法/片段/语言配置 有差异']))
 
-        缺 = []
-        for 表名 in ('关键字', '内建', '异常', '模块', '方法'):
-            for 词 in 规则[表名]:
-                if 词 not in 语法文本:
-                    缺.append(f'{表名}:{词}')
-        断言(not 缺, f'高亮缺词（先跑 工具/导出VSCode高亮.py）：{缺[:8]}')
+        # 生成出来的正则必须能编译，否则整个插件静默失效
+        for 条目 in 插件生成.生成语法(载入规则())['repository'].values():
+            for 模式 in 条目['patterns']:
+                串 = 模式.get('match')
+                if 串:
+                    import re as _re
 
-        片段 = _json4.loads((插件 / 'snippets' / 'bridge.code-snippets')
-                            .read_text(encoding='utf-8'))
-        断言('如果' in 片段 and '定义' in 片段, '代码片段不对')
+                    _re.compile(串)
 
-        包 = _json4.loads((插件 / 'package.json').read_text(encoding='utf-8-sig'))
+        包 = _json4.loads((项目根 / 'vscode-桥语言' / 'package.json')
+                          .read_text(encoding='utf-8-sig'))
         断言(包['version'] == (项目根 / '版本.txt').read_text(encoding='utf-8').strip(),
              '插件版本和 版本.txt 不一致')
         断言(any(项.get('path') == './snippets/bridge.code-snippets'

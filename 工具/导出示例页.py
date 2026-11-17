@@ -48,7 +48,8 @@ def _卡片(相对: str) -> str:
 
 def main() -> int:
     示例们 = sorted((项目根 / '示例' / '特性').glob('*.bridge')) + \
-        sorted((项目根 / '示例').glob('*.bridge'))
+        sorted((项目根 / '示例').glob('*.bridge')) + \
+        sorted((项目根 / '教程' / '示例').glob('*.bridge'))
     卡片们 = '\n'.join(过滤 for 过滤 in
                      (_卡片(str(路径.relative_to(项目根))) for 路径 in 示例们) if 过滤)
 

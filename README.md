@@ -585,10 +585,10 @@ sys.meta_path.insert(0, 桥查找器())
 
 ### VS Code 插件（语法高亮 + 片段 + 运行）
 
-仓库里的 `vscode-桥语言/` 就是插件源码，安装包在 Release 的 `桥语言-vscode-0.3.0.vsix`：
+仓库里的 `vscode-桥语言/` 就是插件源码，安装包在 Release 的 `桥语言-vscode-0.3.1.vsix`：
 
 ```bash
-code --install-extension 桥语言-vscode-0.3.0.vsix
+code --install-extension 桥语言-vscode-0.3.1.vsix
 ```
 
 | 能力 | 说明 |
@@ -825,7 +825,7 @@ $ python 桥.py repl
 ## 四·五、便携包：解压到项目根就能用
 
 ```bash
-python 工具/打包.py            # 精简包 发布/桥-0.3.0.zip（约 0.14 MB）
+python 工具/打包.py            # 精简包 发布/桥-0.3.1.zip（约 0.14 MB）
 python 工具/打包.py --完整     # 完整包（教程/工具/自检/对照用例）
 ```
 
@@ -986,7 +986,7 @@ python 桥.py repl                    # 想试一句就试一句
 │       ├── JSON.py     json.转字符串 / json.解析（4 个成员）
 │       └── 随机.py     随机 → random（10 个成员）
 ├── 教程/               10 章入门 + 可直接跑的示例（教程/示例/）
-├── vscode-桥语言/      VS Code 扩展：高亮 + 运行（工具/导出语法.py 生成语法）
+├── vscode-桥语言/      VS Code 扩展：高亮 + 运行（工具/导出VSCode高亮.py 生成语法）
 ├── pyproject.toml      pip 打包（装完能用 `bridge` / `桥` 命令）
 ├── 命令.py             控制台入口（console_scripts 的壳）
 ├── .github/workflows/  CI：三系统 × 三 Python 跑自检/体检/回归

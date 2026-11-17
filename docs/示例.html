@@ -293,6 +293,352 @@ def 英文函数(x):
 # …</code></pre>
   <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E7%A4%BA%E4%BE%8B/%E8%87%AA%E7%84%B6%E5%8C%96.bridge">在 GitHub 看全文 →</a></p>
 </div>
+<div class="card 示例卡">
+  <h3>01_输出</h3>
+  <p>示例1：定义、全角标点、中英混写</p>
+<pre><code># 示例1：定义、全角标点、中英混写
+
+定义 两个数之和(a, b):
+    c = a + b
+    返回 c
+
+输出(&quot;你好，世界！&quot;)
+
+# 全角半角标点符都是可以的
+对于 i 在 范围（1，5，2）：
+    输出（两个数之和（i，i + 1））</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E6%95%99%E7%A8%8B/%E7%A4%BA%E4%BE%8B/01_%E8%BE%93%E5%87%BA.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>02_变量</h3>
+  <p>混写演示：原生 Python、中文关键字、中文别名，同一个文件里共存</p>
+<pre><code># 混写演示：原生 Python、中文关键字、中文别名，同一个文件里共存
+# 运行：python 桥.py 运行 示例/混写演示.bridge
+
+import math
+
+数据 = [3, 1, 4]
+数据.追加(1)
+数据.排序()
+输出(&quot;排序后：&quot;, 数据)
+输出(&quot;长度：&quot;, 求长度(数据), &quot;最大：&quot;, 求最大值(数据))
+输出(&quot;开方：&quot;, 数学.开方(16), &quot;原生写法：&quot;, math.sqrt(16))
+
+def 英文函数(x):
+    return x * 2
+
+定义 中文函数(x):
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E6%95%99%E7%A8%8B/%E7%A4%BA%E4%BE%8B/02_%E5%8F%98%E9%87%8F.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>03_判断</h3>
+  <p>03 判断：如果 / 否则如果 / 否则，比较词</p>
+<pre><code># 03 判断：如果 / 否则如果 / 否则，比较词
+分数 = 87
+
+如果 分数 不小于 90:
+    等级 = &quot;优秀&quot;
+否则如果 分数 不小于 75:
+    等级 = &quot;良好&quot;
+否则如果 分数 不小于 60:
+    等级 = &quot;及格&quot;
+否则:
+    等级 = &quot;不及格&quot;
+
+输出（&quot;等级：&quot;, 等级）
+输出（&quot;是不是大于 80：&quot;, 分数 大于 80）
+输出（&quot;是不是在 60 到 90 之间：&quot;, 60 小于 分数 小于 90）
+
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E6%95%99%E7%A8%8B/%E7%A4%BA%E4%BE%8B/03_%E5%88%A4%E6%96%AD.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>04_循环</h3>
+  <p>04 循环：对于 / 当 / 重复 N 次 / 中断 / 下一步</p>
+<pre><code># 04 循环：对于 / 当 / 重复 N 次 / 中断 / 下一步
+输出（&quot;== 对于 ==&quot;)
+对于 i 在 范围(1, 4):
+    输出（&quot;i =&quot;, i）
+
+输出（&quot;== 当 ==&quot;)
+计数 = 0
+当 计数 小于 3:
+    计数 += 1
+    输出（&quot;计数 =&quot;, 计数)
+
+输出（&quot;== 重复 3 次 ==&quot;)
+重复执行（3）次:
+    输出（&quot;再来一次&quot;)
+
+输出（&quot;== 中断 与 下一步 ==&quot;)
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E6%95%99%E7%A8%8B/%E7%A4%BA%E4%BE%8B/04_%E5%BE%AA%E7%8E%AF.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>05_函数</h3>
+  <p>05 函数：定义 / 返回 / 默认参数 / 递归</p>
+<pre><code># 05 函数：定义 / 返回 / 默认参数 / 递归
+定义 打招呼(名字, 问候=&quot;你好&quot;):
+    返回 f&quot;{问候}，{名字}！&quot;
+
+输出（打招呼(&quot;爸爸&quot;)）
+输出（打招呼(&quot;爸爸&quot;, 问候=&quot;早上好&quot;)）
+
+
+定义 阶乘(n):
+    如果 n 不大于 1:
+        返回 1
+    返回 n * 阶乘(n - 1)
+
+输出（&quot;5 的阶乘：&quot;, 阶乘(5)）
+
+
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E6%95%99%E7%A8%8B/%E7%A4%BA%E4%BE%8B/05_%E5%87%BD%E6%95%B0.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>06_容器</h3>
+  <p>06 容器：列表 / 字典 / 字符串</p>
+<pre><code># 06 容器：列表 / 字典 / 字符串
+书目 = []
+书目.追加（&quot;三体&quot;)
+书目.追加（&quot;活着&quot;)
+书目.插入（1, &quot;百年孤独&quot;)
+输出（&quot;书目：&quot;, 书目)
+书目.排序()
+输出（&quot;排序后：&quot;, 书目）
+
+借阅 = {&quot;张三&quot;: [&quot;三体&quot;], &quot;李四&quot;: []}
+借阅[&quot;李四&quot;].追加（&quot;活着&quot;)
+输出（&quot;李四借了：&quot;, 借阅.取值(&quot;李四&quot;))
+输出（&quot;有谁借过书：&quot;, 借阅.键列表())
+输出（&quot;张三借了吗：&quot;, &quot;张三&quot; 在 借阅)
+
+句子 = &quot;  你好，世界！  &quot;
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E6%95%99%E7%A8%8B/%E7%A4%BA%E4%BE%8B/06_%E5%AE%B9%E5%99%A8.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>07_文件</h3>
+  <p>07 文件：文本 / CSV 表格</p>
+<pre><code># 07 文件：文本 / CSV 表格
+# 文本：新建 → 读 → 追加 → 删掉
+新建文档（&quot;./笔记.txt&quot;, &quot;第一行\n&quot;)
+笔记 = 读取（&quot;./笔记.txt&quot;)
+笔记.追加（&quot;第二行\n&quot;)
+输出（&quot;笔记内容：&quot;)
+输出（笔记.内容）
+输出（&quot;文件大小：&quot;, 笔记.大小)
+笔记.删除自己()
+
+# CSV：读现成的 → 按列取值（只读，不改原文件）
+表 = 读取（&quot;./成绩.csv&quot;)
+输出（&quot;表头：&quot;, 表.表头)
+输出（&quot;分数列：&quot;, 表.列（&quot;分数&quot;))
+
+# 新建一张表 → 追加 → 保存 → 删掉
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E6%95%99%E7%A8%8B/%E7%A4%BA%E4%BE%8B/07_%E6%96%87%E4%BB%B6.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>08_对象</h3>
+  <p>08 对象：类 + 方法 + JSON 对象</p>
+<pre><code># 08 对象：类 + 方法 + JSON 对象
+类 学生:
+    定义 __init__(self, 名字, 分数):
+        self.名字 = 名字
+        self.分数 = 分数
+
+    定义 等级(self):
+        如果 self.分数 不小于 90:
+            返回 &quot;优秀&quot;
+        如果 self.分数 不小于 60:
+            返回 &quot;及格&quot;
+        返回 &quot;不及格&quot;
+
+    定义 介绍(self):
+        返回 f&quot;{self.名字}：{self.分数} 分（{self.等级()}）&quot;
+
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E6%95%99%E7%A8%8B/%E7%A4%BA%E4%BE%8B/08_%E5%AF%B9%E8%B1%A1.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>09_报错</h3>
+  <p>09 报错：尝试执行 / 捕获 / 抛出</p>
+<pre><code># 09 报错：尝试执行 / 捕获 / 抛出
+定义 取第一个(清单):
+    如果 不是 清单:
+        抛出 值错误(&quot;清单是空的&quot;)
+    返回 清单[0]
+
+尝试执行:
+    输出（取第一个([])）
+捕获 值错误 作为 错误:
+    输出（&quot;接住了：&quot;, 错误)
+
+尝试执行:
+    输出（取第一个([1, 2, 3]))
+捕获 值错误 作为 错误:
+    输出（&quot;不会到这儿&quot;)
+
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E6%95%99%E7%A8%8B/%E7%A4%BA%E4%BE%8B/09_%E6%8A%A5%E9%94%99.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>10_小项目</h3>
+  <p>10 小项目：把前面的东西拼成一个小清单（不用输入，直接跑）</p>
+<pre><code># 10 小项目：把前面的东西拼成一个小清单（不用输入，直接跑）
+导入 时间
+
+书籍 = []
+
+定义 添加(名字, 作者):
+    书籍.追加（{&quot;名字&quot;: 名字, &quot;作者&quot;: 作者, &quot;加的时间&quot;: 时间.格式化时间(&quot;%H:%M:%S&quot;)})
+    返回 求长度(书籍)
+
+定义 清单():
+    如果 不是 书籍:
+        输出（&quot;  （空）&quot;)
+        返回
+    对于 序号, 书 在 枚举(书籍, 1):
+        输出（f&quot;  {序号}. 《{书[&#x27;名字&#x27;]}》  {书[&#x27;作者&#x27;]}  {书[&#x27;加的时间&#x27;]}&quot;)
+
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E6%95%99%E7%A8%8B/%E7%A4%BA%E4%BE%8B/10_%E5%B0%8F%E9%A1%B9%E7%9B%AE.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>11_数据库</h3>
+  <p>11 数据库：把数据存进 SQLite</p>
+<pre><code># 11 数据库：把数据存进 SQLite
+库 = 读取(&quot;./学生.db&quot;)            # 不存在就新建
+表 = 库.建表(&quot;学生&quot;, {
+    &quot;名字&quot;: &quot;TEXT NOT NULL&quot;,
+    &quot;分数&quot;: &quot;INTEGER&quot;,
+})
+
+表.插入({&quot;名字&quot;: &quot;张三&quot;, &quot;分数&quot;: 90})
+表.插入多([{&quot;名字&quot;: &quot;李四&quot;, &quot;分数&quot;: 85}, {&quot;名字&quot;: &quot;王五&quot;, &quot;分数&quot;: 77}])
+
+输出（&quot;共&quot;, 表.行数, &quot;人&quot;)
+输出（表.全部())
+输出（表.查询(&quot;分数 &gt;= ?&quot;, [85]))
+
+# 事务：要么全成，要么全滚
+尝试执行:
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E6%95%99%E7%A8%8B/%E7%A4%BA%E4%BE%8B/11_%E6%95%B0%E6%8D%AE%E5%BA%93.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>12_网络</h3>
+  <p>12 网络：取网页 / 发请求</p>
+<pre><code># 12 网络：取网页 / 发请求
+# 直接跑会用 file:// 读本地文件（不联网）；换成 http 地址就是真请求。
+
+导入 路径
+
+本目录 = 路径.取目录(路径.绝对路径(__file__))
+地址 = &quot;file:///&quot; + 路径.拼接(本目录, &quot;..&quot;, &quot;..&quot;, &quot;示例&quot;, &quot;特性&quot;, &quot;配置.json&quot;).替换(&quot;\\&quot;, &quot;/&quot;)
+
+响应 = 取网页(地址)
+输出（&quot;状态码：&quot;, 响应.状态码, &quot; 正常：&quot;, 响应.正常)
+输出（&quot;内容长度：&quot;, 求长度(响应.内容))
+
+配置 = 响应.JSON
+输出（&quot;站点名：&quot;, 配置.站点名）
+
+# 真联网时：
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E6%95%99%E7%A8%8B/%E7%A4%BA%E4%BE%8B/12_%E7%BD%91%E7%BB%9C.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>13_调试</h3>
+  <p>13 调试：断点、一行一步、看变量</p>
+<pre><code># 13 调试：断点、一行一步、看变量
+定义 计算(甲, 乙):
+    合计 = 甲 + 乙
+    返回 合计
+
+
+结果 = 计算(2, 3)
+输出（&quot;结果&quot;, 结果)
+
+如果 结果 != 5:
+    输出（&quot;失败：期望 5，实际&quot;, 结果)
+否则:
+    输出（&quot;检查通过&quot;)
+
+# 在编辑器里：
+#   F9 在「合计 = 甲 + 乙」打点 → Ctrl+F5 开始调试
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E6%95%99%E7%A8%8B/%E7%A4%BA%E4%BE%8B/13_%E8%B0%83%E8%AF%95.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>14_新标准库</h3>
+  <p>14 新标准库：压缩 / 编码 / 临时文件</p>
+<pre><code># 14 新标准库：压缩 / 编码 / 临时文件
+导入 压缩
+导入 编码
+导入 临时文件
+导入 系统
+
+系统.创建目录(&quot;./.教程临时&quot;, exist_ok=True)
+
+密文 = 编码.编码(&quot;爸爸&quot;.编码())
+输出（&quot;base64：&quot;, 密文)
+输出（&quot;解回来：&quot;, 编码.解码(密文).解码())
+
+带 临时文件.临时文件(&quot;w+&quot;, suffix=&quot;.txt&quot;, encoding=&quot;utf-8&quot;) 作为 件:
+    件.写(&quot;草稿内容&quot;)
+    件.定位(0)
+    输出（&quot;临时文件：&quot;, 件.读())
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E6%95%99%E7%A8%8B/%E7%A4%BA%E4%BE%8B/14_%E6%96%B0%E6%A0%87%E5%87%86%E5%BA%93.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>15_帮助</h3>
+  <p>第 15 章：帮助 —— 忘了怎么用，就在词后面加个问号</p>
+<pre><code># 第 15 章：帮助 —— 忘了怎么用，就在词后面加个问号
+#
+#   python 桥.py 运行 教程/示例/15_帮助.bridge
+
+输出（&quot;=== 1. 问一个关键字 ===&quot;）
+如果?
+
+输出（&quot;=== 2. 问一个内建函数 ===&quot;）
+排队?
+
+输出（&quot;=== 3. 详细模式（词后面两个问号，多给相关词）===&quot;）
+排队??
+
+输出（&quot;=== 4. 问自己定义的函数 ===&quot;）
+定义 打招呼(名字, 语气=&quot;好&quot;):
+    &quot;&quot;&quot;跟人打招呼&quot;&quot;&quot;
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E6%95%99%E7%A8%8B/%E7%A4%BA%E4%BE%8B/15_%E5%B8%AE%E5%8A%A9.bridge">在 GitHub 看全文 →</a></p>
+</div>
+<div class="card 示例卡">
+  <h3>16_可读性</h3>
+  <p>第 16 章：可读性 —— 把 with / lambda / 切片冒号藏起来</p>
+<pre><code># 第 16 章：可读性 —— 把 with / lambda / 切片冒号藏起来
+#
+#   python 桥.py 运行 教程/示例/16_可读性.bridge
+
+类 学生:
+    定义 初始化(自己, 名字, 分数):
+        自己.名字 = 名字
+        自己.分数 = 分数
+
+    定义 报告(自己):
+        返回 f&quot;{自己.名字} {自己.分数} 分&quot;
+
+    定义 显示(自己):
+        返回 自己.报告()
+
+    定义 表示(自己):
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E6%95%99%E7%A8%8B/%E7%A4%BA%E4%BE%8B/16_%E5%8F%AF%E8%AF%BB%E6%80%A7.bridge">在 GitHub 看全文 →</a></p>
+</div>
     </div>
   </section>
 </main>
