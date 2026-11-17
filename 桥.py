@@ -411,9 +411,17 @@ def 命令_init(参数: list[str]) -> int:
 
 
 def 命令_帮助(参数: list[str]) -> int:
-    """`python 桥.py 帮助 如果` —— 和 .bridge 里写 `如果?` 是同一条链路"""
+    """`python 桥.py 帮助 如果` —— 和 .bridge 里写 `如果?` 是同一条链路
+
+    `python 桥.py 帮助 全部 > 速查.md` 会导出一份 Markdown 速查文档。
+    """
     from 转译器.运行时 import 桥帮助
 
+    if 参数 and 参数[0] in ('全部', 'all', '导出'):
+        from 转译器.帮助 import 导出Markdown
+
+        print(导出Markdown())
+        return 0
     桥帮助(参数[0] if 参数 else '')
     return 0
 

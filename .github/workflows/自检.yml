@@ -13,10 +13,13 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        python: ['3.11', '3.12', '3.13']
+        python: ['3.10', '3.11', '3.12', '3.13']
         exclude:
+          # macOS 只留最新两个版本，省额度；Linux/Windows 覆盖全版本
           - os: macos-latest
             python: '3.11'
+          - os: macos-latest
+            python: '3.10'
 
     runs-on: ${{ matrix.os }}
     env:
@@ -45,11 +48,26 @@ jobs:
           from pathlib import Path
           from 转译器 import 编译
           坏 = 0
-          for f in sorted(Path('示例').glob('*.bridge')):
-              try:
-                  编译(f.read_text(encoding='utf-8-sig'), str(f))
-              except Exception as e:
-                  print('FAIL', f, e)
-                  坏 += 1
+          for 目录 in ('示例', '教程/示例'):
+              for f in sorted(Path(目录).glob('*.bridge')):
+                  try:
+                      编译(f.read_text(encoding='utf-8-sig'), str(f))
+                  except Exception as e:
+                      print('FAIL', f, e)
+                      坏 += 1
           raise SystemExit(1 if 坏 else 0)
           PY
+
+      - name: 兼容性扫描（最低支持 3.10）
+        shell: bash
+        run: python 工具/查兼容.py
+
+      - name: 文档与规则同步（落后就失败）
+        shell: bash
+        run: |
+          python 工具/导出AI参考.py
+          if ! git diff --quiet; then
+            echo "::error::AI 文档落后于规则表：本地跑 python 工具/导出AI参考.py 并提交"
+            git diff --stat
+            exit 1
+          fi

@@ -335,13 +335,22 @@ def _替换词(文本: str, 规则: dict, 前缀模式: bool) -> str:
 
 # 条件语句：只有这一族允许吃掉行尾助词（`当 x 时:` → `while x:`）
 _条件关键字 = ('while', 'if', 'elif')
-_助词行 = re.compile(
-    r'^(?P<缩进>[ \t]*)'
-    r'(?P<关键字>while|if|elif)'
-    r'\s+(?P<条件>\S.*?)'
-    r'\s*(?P<助词>' + '|'.join(sorted(['的时候', '的话', '时'], key=len, reverse=True)) + r')'
-    r'\s*:\s*$'
-)
+
+
+@functools.lru_cache(maxsize=8)
+def _助词正则(词们: tuple[str, ...]) -> re.Pattern:
+    """按规则表的助词生成正则——助词是**数据**，不再硬编码在代码里
+
+    （之前这里写死了 ['的时候','的话','时']，导致 `关键字.py` 的助词表其实没生效，
+    想加个「里」还得改代码；现在加词只改规则表。）
+    """
+    return re.compile(
+        r'^(?P<缩进>[ \t]*)'
+        r'(?P<关键字>while|if|elif)'
+        r'\s+(?P<条件>\S.*?)'
+        r'\s*(?P<助词>' + '|'.join(re.escape(词) for 词 in 词们) + r')'
+        r'\s*:\s*$'
+    )
 
 
 def _去助词行(行: str, 规则: dict) -> str:
@@ -354,7 +363,8 @@ def _去助词行(行: str, 规则: dict) -> str:
     助词表 = 规则.get('助词') or {}
     if not 助词表:
         return 行
-    匹配 = _助词行.match(行)
+    词们 = tuple(sorted((词 for 词 in 助词表 if 词), key=len, reverse=True))
+    匹配 = _助词正则(词们).match(行)
     if 匹配 and 匹配.group('助词') in 助词表:
         return f"{匹配.group('缩进')}{匹配.group('关键字')} {匹配.group('条件').rstrip()}:"
     return 行
@@ -672,7 +682,9 @@ def 转译(源码: str, *, 规则: dict | None = None, 前缀模式: bool = Fals
     结果 = ''.join(输出)
 
     # ③ 行尾助词：此时关键字已是英文，整行处理；没有语气词就整段跳过
-    if any(词 in 结果 for 词 in ('时', '的话')):
+    # 快路径也按规则表的助词来判（之前写死成 时/的话，加了「里」就整段被跳过）
+    助词词们 = tuple((规.get('助词') or {}).keys())
+    if any(词 in 结果 for 词 in 助词词们):
         结果 = _整行处理(结果, lambda 行: _去助词行(行, 规))
     # ④ 模块级 `返回 X` → `raise 桥返回(X)`，由 桥运行 接住
     return _改写模块返回(结果)
