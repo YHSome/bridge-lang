@@ -5,6 +5,9 @@ on:
     tags: ['v*']
   workflow_dispatch:
 
+permissions:
+  contents: write        # 建 Release + 传附件要它
+
 jobs:
   package:
     runs-on: windows-latest
@@ -14,6 +17,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # 发版说明要从 git tag/log 生成，得拿全历史
 
       - uses: actions/setup-python@v5
         with:
@@ -73,3 +78,12 @@ jobs:
           path: |
             发布/桥-*.zip
             发布/桥/校验.txt
+
+      # tag 一推就自动建 Release 并传三个附件（Actions 自带 GITHUB_TOKEN，
+      # 不需要人手点网页，也不需要个人 PAT）。说明从 git log 生成。
+      - name: 发版（建 Release + 传附件）
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python 工具/发版.py
