@@ -67,7 +67,9 @@ jobs:
         run: |
           python 工具/导出AI参考.py
           if ! git diff --quiet; then
-            echo "::error::AI 文档落后于规则表：本地跑 python 工具/导出AI参考.py 并提交"
-            git diff --stat
+            git --no-pager diff --stat
+            # 把差异打成 annotation：红了以后不用 logs 权限也能看到差在哪
+            echo "::error title=漂移文件::$(git --no-pager diff --stat | tr '\n' '|' | head -c 800)"
+            git --no-pager diff -U0 | head -12 | sed 's/^/::error title=diff::/'
             exit 1
           fi
