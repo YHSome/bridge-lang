@@ -59,6 +59,7 @@ def 运行时名字() -> dict:
         '桥读二进制': 桥读二进制,
         '桥打开压缩包': 桥打开压缩包,
         '桥打开目录': 桥打开目录,
+        '桥建目录': 桥建目录,
         '桥帮助': 桥帮助,
         '二进制文件': 二进制文件,
         '压缩包': 压缩包,
@@ -224,6 +225,16 @@ class 文件:
         目标路径 = _定位路径(目标)
         shutil.copy2(self._路径, 目标路径)
         return self.__class__(目标路径)
+
+    def 移动到(self, 目标) -> '文件':
+        """移动（改名 + 换目录），跨磁盘也认；返回自己，路径已更新"""
+        import shutil
+
+        目标路径 = _定位路径(目标)
+        目标路径.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(self._路径), str(目标路径))
+        object.__setattr__(self, '_路径', 目标路径)
+        return self
 
     def 删除(self) -> None:
         if self._路径.exists():
@@ -1385,6 +1396,42 @@ class 目录:
         目标 = self._路径 / str(名)
         return 桥新建(目标, 内容)
 
+    def 新建目录(self, 名: str) -> '目录':
+        """在目录里建一个子目录（已存在也不报错）"""
+        self._确保()
+        目标 = self._路径 / str(名)
+        目标.mkdir(parents=True, exist_ok=True)
+        return 目录(目标)
+
+    def 复制到(self, 目标) -> '目录':
+        """整个目录复制过去（目标已存在就合并覆盖，和资源管理器一致）"""
+        import shutil
+
+        目标路径 = _定位路径(目标)
+        shutil.copytree(str(self._路径), str(目标路径), dirs_exist_ok=True)
+        return 目录(目标路径)
+
+    def 移动到(self, 目标) -> '目录':
+        import shutil
+
+        目标路径 = _定位路径(目标)
+        目标路径.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(self._路径), str(目标路径))
+        object.__setattr__(self, '_路径', 目标路径)
+        return self
+
+    def 清空自己(self) -> '目录':
+        """删光里面的东西，但保留目录本身"""
+        self._确保()
+        for 项 in self._路径.iterdir():
+            if 项.is_dir():
+                import shutil
+
+                shutil.rmtree(项)
+            else:
+                项.unlink()
+        return self
+
     @property
     def 条目数(self) -> int:
         return len(self.文件们) + len(self.子目录们)
@@ -1411,3 +1458,10 @@ def 桥打开目录(路径) -> 目录:
     if not 目录路径.is_dir():
         raise FileNotFoundError(f'目录不存在：{目录路径}')
     return 目录(目录路径)
+
+
+def 桥建目录(路径) -> 目录:
+    """建目录（父目录一起建，已存在也不报错）"""
+    目标 = _定位路径(路径)
+    目标.mkdir(parents=True, exist_ok=True)
+    return 目录(目标)

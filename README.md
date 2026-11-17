@@ -587,10 +587,10 @@ sys.meta_path.insert(0, 桥查找器())
 
 ### VS Code 插件（语法高亮 + 片段 + 运行）
 
-仓库里的 `vscode-桥语言/` 就是插件源码，安装包在 Release 的 `桥语言-vscode-0.4.0.vsix`：
+仓库里的 `vscode-桥语言/` 就是插件源码，安装包在 Release 的 `桥语言-vscode-0.4.1.vsix`：
 
 ```bash
-code --install-extension 桥语言-vscode-0.4.0.vsix
+code --install-extension 桥语言-vscode-0.4.1.vsix
 ```
 
 | 能力 | 说明 |
@@ -827,7 +827,7 @@ $ python 桥.py repl
 ## 四·五、便携包：解压到项目根就能用
 
 ```bash
-python 工具/打包.py            # 精简包 发布/桥-0.4.0.zip（约 0.16 MB）
+python 工具/打包.py            # 精简包 发布/桥-0.4.1.zip（约 0.16 MB）
 python 工具/打包.py --完整     # 完整包（教程/工具/自检/对照用例）
 ```
 
