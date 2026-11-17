@@ -1428,6 +1428,31 @@ def main() -> int:
     检查('目录对象（文件们/按后缀/递归/新建文件）', 目录对象)
     检查('桥.py 反向（Python → 桥语言，含往返自检）', 反向译命令)
 
+    def 双击运行器():
+        """桥运行.py：切到 .bridge 所在目录、透传退出码、不暂停（非终端时）"""
+        import subprocess as _sp
+        import sys as _sys
+
+        临时 = 项目根 / '.自检临时'
+        try:
+            shutil.rmtree(临时, ignore_errors=True)
+            临时.mkdir(parents=True)
+            (临时 / '数据.txt').write_text('同级文件', encoding='utf-8')
+            (临时 / '被测.bridge').write_text(
+                '文档 = 读取("数据.txt")\n输出（"读到：", 文档.内容）\n', encoding='utf-8')
+            完成 = _sp.run([_sys.executable, str(项目根 / '桥运行.py'),
+                           str(临时 / '被测.bridge'), '--不暂停'],
+                          capture_output=True, text=True, encoding='utf-8',
+                          errors='replace', cwd=str(项目根), timeout=120)
+            断言(完成.returncode == 0,
+                 f'退出码 {完成.returncode}：{完成.stderr[-300:]}')
+            断言('读到： 同级文件' in 完成.stdout,
+                 f'没把工作目录切到 .bridge 旁边：{完成.stdout!r}')
+        finally:
+            shutil.rmtree(临时, ignore_errors=True)
+
+    检查('双击运行器（桥运行.py 切目录 + 透传退出码）', 双击运行器)
+
     print('== 编译缓存 ==')
 
     def 缓存命中与失效():

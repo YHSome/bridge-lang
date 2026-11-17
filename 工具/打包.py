@@ -41,7 +41,10 @@ from pathlib import Path
     'LICENSE',
     '版本.txt',
     # `桥.py 反向`（Python → 桥语言）要用，别看它们在 工具/ 里就只进完整包
+    '桥运行.py',
+    'bridge_run.py',
     '工具/反向译.py',
+    '工具/关联.py',
     '工具/改名.py',
     '工具/译名.py',
 ]
@@ -125,6 +128,13 @@ def 生成启动脚本(包目录: Path) -> None:
         'python "%~dp0bridge.py" %*\r\n',
         encoding='ascii', newline='',
     )
+    (包目录 / '桥运行.bat').write_text(
+        '@echo off\r\n'
+        'rem Drag a .bridge onto this file to run it (portable, no association needed).\r\n'
+        'setlocal\r\n'
+        'python "%~dp0bridge_run.py" %*\r\n',
+        encoding='ascii', newline='',
+    )
     (包目录 / '桥.sh').write_text(
         '#!/bin/sh\n'
         '# Portable launcher for macOS / Linux (chmod +x this file)\n'
@@ -197,7 +207,7 @@ def 打包(版本: str, 只留目录: bool, 完整: bool = False) -> int:
 
 
 def main(参数: list[str]) -> int:
-    版本 = '0.4.1'
+    版本 = '0.5.0'
     for i, 段 in enumerate(参数):
         if 段 in ('--版本', '-v') and i + 1 < len(参数):
             版本 = 参数[i + 1]
