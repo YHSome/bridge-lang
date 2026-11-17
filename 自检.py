@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import io
+import os
 import shutil
 import subprocess
 import sys
@@ -56,6 +57,10 @@ def 检查(名称: str, 动作) -> None:
             return
         失败.append((名称, 原因))
         print(f'  FAIL {名称} -> {原因}')
+        # 在 GitHub Actions 上顺手打一条 annotation：红了以后不用 logs 权限也能读到
+        # 具体是哪条挂的（`/check-runs/{id}/annotations` 是公开可读的）
+        if os.environ.get('GITHUB_ACTIONS') == 'true':
+            print(f'::error title=自检失败：{名称}::{原因}')
 
 
 def 断言(条件: bool, 说明: str) -> None:

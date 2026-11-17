@@ -51,7 +51,10 @@ def 载入规则(强制: bool = False) -> dict:
 
     合并 = {名: ([] if 名 in 列表表 else {}) for 名 in 表名}
     来源表 = {}
-    for 信息 in pkgutil.iter_modules(规则包.__path__):
+    # **按文件名排序**扫描：pkgutil 给的是文件系统顺序（NTFS 字母序、ext4 创建序），
+    # 不排序的话"生成的文档顺序"会随平台变，CI 的「文档与规则同步」就会假红。
+    模块们 = sorted(pkgutil.iter_modules(规则包.__path__), key=lambda 信息: 信息.name)
+    for 信息 in 模块们:
         if 信息.name.startswith('_'):
             continue
         文件 = f'{信息.name}.py'
