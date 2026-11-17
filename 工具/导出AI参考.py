@@ -327,7 +327,8 @@ def 主函数() -> int:
     (项目根 / 'AGENTS.md').write_text('\n'.join(agents) + '\n', encoding='utf-8')
 
     print(f'AI参考.md：{len(行)} 行')
-    print(f'AI速查.txt：{len(速)} 行（{len("\\n".join(速).encode("utf-8")) / 1024:.1f} KB）')
+    速查大小 = len('\n'.join(速).encode('utf-8')) / 1024
+    print(f'AI速查.txt：{len(速)} 行（{速查大小:.1f} KB）')
     print('docs/桥语言规则.json：已生成')
     print('AGENTS.md：已生成（编码助手入口）')
     print(f'关键字 {len(关键字)} / 内建 {len(内建)} / 异常 {len(异常)} / '
