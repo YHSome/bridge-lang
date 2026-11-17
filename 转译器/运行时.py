@@ -58,9 +58,11 @@ def 运行时名字() -> dict:
         '桥倒过来': 桥倒过来,
         '桥读二进制': 桥读二进制,
         '桥打开压缩包': 桥打开压缩包,
+        '桥打开目录': 桥打开目录,
         '桥帮助': 桥帮助,
         '二进制文件': 二进制文件,
         '压缩包': 压缩包,
+        '目录': 目录,
         '文档': 文档,
         '文件': 文件,
     }
@@ -1289,3 +1291,123 @@ def 桥打开压缩包(路径) -> 压缩包:
         with zipfile.ZipFile(文件, 'w'):
             pass
     return 压缩包(文件)
+
+
+class 目录:
+    """`打开目录("数据")` 拿到的对象：不用 `os.listdir` 再自己拼路径
+
+    - `文件们` / `子目录们`（都是对象，不是字符串）
+    - `递归` 到底下所有文件；`按后缀("csv")` 只挑某类
+    - `对于 f 在 目录:` 等价于遍历 `文件们`
+    - `新建文件("a.txt", "内容")` 直接造一个 `文档`
+
+    为什么要它：处理一批文件时，Python 的写法是
+    `for 名 in os.listdir(d): p = os.path.join(d, 名)`，最容易被"目录/文件"绕晕；
+    这里是"一个目录对象，点它拿东西"。
+    """
+
+    内部名 = frozenset({'路径', '名字', '存在', '文件们', '子目录们', '递归',
+                        '按后缀', '新建文件', '条目数', '删除自己',
+                        '全部文件', '全部递归'})
+
+    # 递归/列目录时默认跳过的"垃圾"：否则一打开项目就是一堆 __pycache__ 和缓存
+    忽略目录 = frozenset({'__pycache__', '.git', '.idea', 'node_modules', '发布'})
+    忽略后缀 = frozenset({'.pyc', '.bridgec', '.pyo'})
+    忽略名字 = frozenset({'.DS_Store', 'Thumbs.db'})
+
+    def __init__(self, 路径) -> None:
+        object.__setattr__(self, '_路径', Path(路径))
+
+    @property
+    def 路径(self) -> str:
+        return str(self._路径)
+
+    @property
+    def 名字(self) -> str:
+        return self._路径.name
+
+    @property
+    def 存在(self) -> bool:
+        return self._路径.is_dir()
+
+    def _确保(self) -> None:
+        if not self._路径.is_dir():
+            raise FileNotFoundError(f'目录不存在：{self._路径}')
+
+    @classmethod
+    def _要(cls, 项: Path) -> bool:
+        return not (项.suffix.lower() in cls.忽略后缀 or 项.name in cls.忽略名字)
+
+    @property
+    def 全部文件(self) -> list:
+        """不跳过缓存的完整列表"""
+        self._确保()
+        return [文件(项) for 项 in sorted(self._路径.iterdir()) if 项.is_file()]
+
+    @property
+    def 文件们(self) -> list:
+        return [件 for 件 in self.全部文件 if self._要(Path(件.路径))]
+
+    @property
+    def 子目录们(self) -> list['目录']:
+        self._确保()
+        return [目录(项) for 项 in sorted(self._路径.iterdir())
+                if 项.is_dir() and 项.name not in self.忽略目录]
+
+    @property
+    def 全部递归(self) -> list:
+        """不跳过缓存的完整递归列表"""
+        self._确保()
+        return [文件(项) for 项 in sorted(self._路径.rglob('*')) if 项.is_file()]
+
+    @property
+    def 递归(self) -> list:
+        self._确保()
+        出 = []
+        for 项 in sorted(self._路径.rglob('*')):
+            if not 项.is_file():
+                continue
+            if any(段 in self.忽略目录 for 段 in 项.relative_to(self._路径).parts[:-1]):
+                continue
+            if self._要(项):
+                出.append(文件(项))
+        return 出
+
+    def 按后缀(self, 后缀: str) -> list:
+        r"""`目录.按后缀("csv")` / `(".csv")` 都认；大小写不敏感"""
+        尾巴 = str(后缀).strip().lower().lstrip('.')
+        if not 尾巴.startswith('.'):
+            尾巴 = '.' + 尾巴
+        return [项 for 项 in self.文件们 if 项.后缀.lower() == 尾巴]
+
+    def 新建文件(self, 名: str, 内容=None):
+        self._确保()
+        目标 = self._路径 / str(名)
+        return 桥新建(目标, 内容)
+
+    @property
+    def 条目数(self) -> int:
+        return len(self.文件们) + len(self.子目录们)
+
+    def 删除自己(self) -> None:
+        import shutil
+
+        if self._路径.is_dir():
+            shutil.rmtree(self._路径)
+
+    def __iter__(self):
+        return iter(self.文件们)
+
+    def __len__(self) -> int:
+        return len(self.文件们)
+
+    def __repr__(self) -> str:
+        return f'目录({self._路径.name}/)'
+
+
+def 桥打开目录(路径) -> 目录:
+    """打开一个目录（相对路径按调用者脚本目录找）；不存在直接报错"""
+    目录路径 = _定位路径(路径)
+    if not 目录路径.is_dir():
+        raise FileNotFoundError(f'目录不存在：{目录路径}')
+    return 目录(目录路径)

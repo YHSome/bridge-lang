@@ -226,8 +226,8 @@ def 验证(产物: str, 原文: str) -> tuple[bool, str]:
 
 
 def 处理文件(源: Path, 出: Path | None, 映射: dict[str, str] | None = None,
-             环境: dict | None = None) -> dict:
-    """`映射` 非空时先把英文标识符改成中文，再做词级反译"""
+             环境: dict | None = None) -> tuple[dict, str]:
+    """`映射` 非空时先把英文标识符改成中文，再做词级反译；返回 (统计, 桥语言源码)"""
     原文 = 源.read_text(encoding='utf-8-sig').replace('\r\n', '\n')
     工作文 = 原文
     改名数 = 0
@@ -252,7 +252,7 @@ def 处理文件(源: Path, 出: Path | None, 映射: dict[str, str] | None = No
     if 出:
         出.parent.mkdir(parents=True, exist_ok=True)
         出.write_text(产物, encoding='utf-8', newline='\n')
-    return 统计
+    return 统计, 产物
 
 
 def _准备改名环境(源: Path, 译名模块) -> tuple[dict[str, str], dict]:
@@ -334,7 +334,8 @@ def main(argv: list[str]) -> int:
         目标根 = 出 or (源.parent / (源.name + '-桥语言'))
         for 文件 in sorted(源.rglob('*.py')):
             相对 = 文件.relative_to(源).with_suffix('.bridge')
-            结果[str(相对)] = 处理文件(文件, 目标根 / 相对, 映射, 环境)
+            统计, _产物 = 处理文件(文件, 目标根 / 相对, 映射, 环境)
+            结果[str(相对)] = 统计
         print(json.dumps(结果, ensure_ascii=False, indent=2))
         好 = sum(1 for v in 结果.values() if v.get('往返一致'))
         print(f'\n文件 {len(结果)} 个，往返一致 {好} 个')
@@ -343,10 +344,13 @@ def main(argv: list[str]) -> int:
         print(f'输出目录：{目标根}')
         return 0 if 好 == len(结果) else 1
 
-    统计 = 处理文件(源, 出, 映射, 环境)
+    统计, 产物 = 处理文件(源, 出, 映射, 环境)
     if 出:
         print(f'已写出 {出}')
-    print(json.dumps(统计, ensure_ascii=False, indent=2))
+    else:
+        # 没给 -o 就直接把桥语言源码打到 stdout（方便 `管道/重定向/预览`）
+        print(产物, end='')
+    print(json.dumps(统计, ensure_ascii=False, indent=2), file=sys.stderr)
     return 0 if 统计.get('往返一致') else 1
 
 

@@ -639,6 +639,28 @@ def 英文函数(x):
 # …</code></pre>
   <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E6%95%99%E7%A8%8B/%E7%A4%BA%E4%BE%8B/16_%E5%8F%AF%E8%AF%BB%E6%80%A7.bridge">在 GitHub 看全文 →</a></p>
 </div>
+<div class="card 示例卡">
+  <h3>17_目录</h3>
+  <p>第 17 章：目录 —— 一个目录对象，点它拿文件</p>
+<pre><code># 第 17 章：目录 —— 一个目录对象，点它拿文件
+#
+#   python 桥.py 运行 教程/示例/17_目录.bridge
+#
+# 不用 `os.listdir` 再自己拼路径，也不用记 `os.path.join`。
+
+数据 = 打开目录(&quot;.&quot;)      # 相对路径按「这个脚本所在目录」找
+
+输出（&quot;=== 1. 目录里的文件（可以直接遍历）===&quot;）
+对于 件 在 数据:
+    输出（&quot;  &quot;, 件.文件名, &quot; &quot;, 件.大小, &quot; 字节&quot;)
+
+输出（&quot;=== 2. 只挑某类后缀 ===&quot;）
+对于 表 在 数据.按后缀(&quot;bridge&quot;):
+    输出（&quot;  &quot;, 表.文件名）
+
+# …</code></pre>
+  <p><a href="https://github.com/YHSome/bridge-lang/blob/main/%E6%95%99%E7%A8%8B/%E7%A4%BA%E4%BE%8B/17_%E7%9B%AE%E5%BD%95.bridge">在 GitHub 看全文 →</a></p>
+</div>
     </div>
   </section>
 </main>

@@ -1355,6 +1355,61 @@ def main() -> int:
 
     检查('词?? 详细模式 + 帮助导出 Markdown', 帮助详细模式与导出)
 
+    print('== 目录对象 · 反向译 ==')
+
+    def 目录对象():
+        from 转译器.运行时 import 桥打开目录
+
+        临时 = 项目根 / '.自检临时'
+        try:
+            shutil.rmtree(临时, ignore_errors=True)
+            (临时 / '子').mkdir(parents=True)
+            (临时 / '__pycache__').mkdir()
+            (临时 / '甲.txt').write_text('甲', encoding='utf-8')
+            (临时 / '乙.csv').write_text('a,b\n', encoding='utf-8')
+            (临时 / '子' / '丙.txt').write_text('丙', encoding='utf-8')
+            (临时 / '__pycache__' / 'x.pyc').write_text('x', encoding='utf-8')
+
+            目录 = 桥打开目录(临时)
+            断言({件.文件名 for 件 in 目录.文件们} == {'甲.txt', '乙.csv'},
+                 f'文件们不对：{目录.文件们}')
+            断言([件.文件名 for 件 in 目录.按后缀('txt')] == ['甲.txt'], '按后缀不对')
+            断言([件.文件名 for 件 in 目录.按后缀('.csv')] == ['乙.csv'], '带点的后缀也要认')
+            断言(len(目录.递归) == 3, f'递归应跳过 __pycache__：{目录.递归}')
+            断言(len(目录.全部递归) == 4, '全部递归应包含缓存')
+            断言([项.名字 for 项 in 目录.子目录们] == ['子'], f'子目录们不对：{目录.子目录们}')
+            断言(len(目录) == 2 and 目录.条目数 == 3, '长度/条目数不对')
+            新 = 目录.新建文件('子/丁.txt', '丁')
+            断言(新.内容 == '丁' and (临时 / '子' / '丁.txt').is_file(), '新建文件不对')
+        finally:
+            shutil.rmtree(临时, ignore_errors=True)
+
+    def 反向译命令():
+        import subprocess as _sp
+        import sys as _sys
+
+        临时 = 项目根 / '.自检临时'
+        try:
+            shutil.rmtree(临时, ignore_errors=True)
+            临时.mkdir(parents=True)
+            源 = 临时 / '甲.py'
+            源.write_text('def 加法(a, b):\n    return a + b\n\nprint(加法(1, 2))\n',
+                          encoding='utf-8')
+            产物 = 临时 / '甲.bridge'
+            完成 = _sp.run([_sys.executable, str(项目根 / '桥.py'), '反向', str(源), '-o', str(产物)],
+                           capture_output=True, text=True, encoding='utf-8', errors='replace')
+            断言(完成.returncode == 0,
+                 f'反向译退出码 {完成.returncode}：{完成.stdout[-200:]}{完成.stderr[-200:]}')
+            文本 = 产物.read_text(encoding='utf-8')
+            断言('定义 加法' in 文本 and '返回 a + b' in 文本 and '输出(加法' in 文本,
+                 f'反向译产物不对：{文本!r}')
+            断言('"往返一致": true' in 完成.stderr, f'没报告往返一致：{完成.stderr[-200:]!r}')
+        finally:
+            shutil.rmtree(临时, ignore_errors=True)
+
+    检查('目录对象（文件们/按后缀/递归/新建文件）', 目录对象)
+    检查('桥.py 反向（Python → 桥语言，含往返自检）', 反向译命令)
+
     print('== 编译缓存 ==')
 
     def 缓存命中与失效():
